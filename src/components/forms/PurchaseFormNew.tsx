@@ -27,6 +27,7 @@ interface PurchaseItem {
   category: string;
   weight: string;
   price_per_gram: string;
+  quantity: string;
 }
 
 export default function PurchaseFormNew() {
@@ -41,7 +42,7 @@ export default function PurchaseFormNew() {
   });
 
   const [items, setItems] = useState<PurchaseItem[]>([
-    { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "" },
+    { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1" },
   ]);
 
   const { data: inventory = [] } = useQuery({
@@ -59,7 +60,7 @@ export default function PurchaseFormNew() {
   const addItem = () => {
     setItems([
       ...items,
-      { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "" },
+      { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1" },
     ]);
   };
 
@@ -87,7 +88,8 @@ export default function PurchaseFormNew() {
     return items.reduce((sum, item) => {
       const weight = parseFloat(item.weight) || 0;
       const pricePerGram = parseFloat(item.price_per_gram) || 0;
-      return sum + weight * pricePerGram;
+      const quantity = parseFloat(item.quantity) || 0;
+      return sum + weight * pricePerGram * quantity;
     }, 0);
   };
 
@@ -130,7 +132,8 @@ export default function PurchaseFormNew() {
         category: item.category,
         weight: parseFloat(item.weight),
         price_per_gram: parseFloat(item.price_per_gram),
-        amount: parseFloat(item.weight) * parseFloat(item.price_per_gram),
+        quantity: parseInt(item.quantity),
+        amount: parseFloat(item.weight) * parseFloat(item.price_per_gram) * parseInt(item.quantity),
       }));
 
       const { error: itemsError } = await supabase
@@ -147,7 +150,7 @@ export default function PurchaseFormNew() {
         description: "",
       });
       setItems([
-        { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "" },
+        { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1" },
       ]);
       queryClient.invalidateQueries({ queryKey: ["purchases"] });
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
@@ -249,6 +252,17 @@ export default function PurchaseFormNew() {
                   />
                 </div>
 
+                <div className="col-span-1 space-y-1">
+                  <Label className="text-xs">الكمية</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    className="h-9"
+                    value={item.quantity}
+                    onChange={(e) => updateItem(index, "quantity", e.target.value)}
+                  />
+                </div>
+
                 <div className="col-span-2 space-y-1">
                   <Label className="text-xs">الوزن (جم)</Label>
                   <Input
@@ -273,11 +287,12 @@ export default function PurchaseFormNew() {
                   />
                 </div>
 
-                <div className="col-span-3 flex items-center justify-between">
+                <div className="col-span-2 flex items-center justify-between">
                   <div className="text-sm font-semibold">
                     {(
                       (parseFloat(item.weight) || 0) *
-                      (parseFloat(item.price_per_gram) || 0)
+                      (parseFloat(item.price_per_gram) || 0) *
+                      (parseFloat(item.quantity) || 0)
                     ).toFixed(2)}
                   </div>
                   {items.length > 1 && (

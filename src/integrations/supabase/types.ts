@@ -96,6 +96,7 @@ export type Database = {
           item_name: string
           price_per_gram: number
           purchase_id: string
+          quantity: number
           weight: number
         }
         Insert: {
@@ -107,6 +108,7 @@ export type Database = {
           item_name: string
           price_per_gram: number
           purchase_id: string
+          quantity?: number
           weight: number
         }
         Update: {
@@ -118,6 +120,7 @@ export type Database = {
           item_name?: string
           price_per_gram?: number
           purchase_id?: string
+          quantity?: number
           weight?: number
         }
         Relationships: [
@@ -206,6 +209,7 @@ export type Database = {
           inventory_item_id: string | null
           item_name: string
           price_per_gram: number
+          quantity: number
           sale_id: string
           weight: number
         }
@@ -217,6 +221,7 @@ export type Database = {
           inventory_item_id?: string | null
           item_name: string
           price_per_gram: number
+          quantity?: number
           sale_id: string
           weight: number
         }
@@ -228,6 +233,7 @@ export type Database = {
           inventory_item_id?: string | null
           item_name?: string
           price_per_gram?: number
+          quantity?: number
           sale_id?: string
           weight?: number
         }
