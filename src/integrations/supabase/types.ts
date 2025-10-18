@@ -14,7 +14,231 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      expenses: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string | null
+          date: string
+          description: string
+          id: string
+          payment_method: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          created_at?: string | null
+          date?: string
+          description: string
+          id?: string
+          payment_method: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string | null
+          date?: string
+          description?: string
+          id?: string
+          payment_method?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      inventory: {
+        Row: {
+          created_at: string | null
+          id: string
+          karat: string
+          name: string
+          price_per_gram: number
+          status: string
+          stock: number
+          user_id: string | null
+          weight: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          karat: string
+          name: string
+          price_per_gram: number
+          status?: string
+          stock?: number
+          user_id?: string | null
+          weight?: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          karat?: string
+          name?: string
+          price_per_gram?: number
+          status?: string
+          stock?: number
+          user_id?: string | null
+          weight?: number
+        }
+        Relationships: []
+      }
+      purchase_items: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          inventory_item_id: string | null
+          item_name: string
+          price_per_gram: number
+          purchase_id: string
+          weight: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          inventory_item_id?: string | null
+          item_name: string
+          price_per_gram: number
+          purchase_id: string
+          weight: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          inventory_item_id?: string | null
+          item_name?: string
+          price_per_gram?: number
+          purchase_id?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_items_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_items_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchases: {
+        Row: {
+          amount: number
+          created_at: string | null
+          date: string
+          description: string
+          id: string
+          payment_method: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          date?: string
+          description: string
+          id?: string
+          payment_method: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          date?: string
+          description?: string
+          id?: string
+          payment_method?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      sales: {
+        Row: {
+          amount: number
+          created_at: string | null
+          date: string
+          description: string
+          id: string
+          payment_method: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          date?: string
+          description: string
+          id?: string
+          payment_method: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          date?: string
+          description?: string
+          id?: string
+          payment_method?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      sales_items: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          inventory_item_id: string | null
+          item_name: string
+          price_per_gram: number
+          sale_id: string
+          weight: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          inventory_item_id?: string | null
+          item_name: string
+          price_per_gram: number
+          sale_id: string
+          weight: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          inventory_item_id?: string | null
+          item_name?: string
+          price_per_gram?: number
+          sale_id?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_items_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_items_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

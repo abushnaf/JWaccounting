@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingBag, Package, TrendingDown } from "lucide-react";
-import PurchaseForm from "@/components/forms/PurchaseForm";
+import PurchaseFormNew from "@/components/forms/PurchaseFormNew";
 import { Badge } from "@/components/ui/badge";
 
 export default function Purchases() {
@@ -75,7 +75,7 @@ export default function Purchases() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl">طلبيات الشراء</CardTitle>
-            <PurchaseForm />
+            <PurchaseFormNew />
           </div>
         </CardHeader>
         <CardContent>

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingCart, DollarSign, TrendingUp } from "lucide-react";
-import SaleForm from "@/components/forms/SaleForm";
+import SaleFormNew from "@/components/forms/SaleFormNew";
 import { Badge } from "@/components/ui/badge";
 
 export default function Sales() {
@@ -85,7 +85,7 @@ export default function Sales() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl">فواتير المبيعات</CardTitle>
-            <SaleForm />
+            <SaleFormNew />
           </div>
         </CardHeader>
         <CardContent>
