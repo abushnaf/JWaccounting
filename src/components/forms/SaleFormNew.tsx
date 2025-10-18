@@ -24,6 +24,7 @@ import { toast } from "sonner";
 interface SaleItem {
   inventory_item_id: string;
   item_name: string;
+  category: string;
   weight: string;
   price_per_gram: string;
 }
@@ -40,7 +41,7 @@ export default function SaleFormNew() {
   });
 
   const [items, setItems] = useState<SaleItem[]>([
-    { inventory_item_id: "", item_name: "", weight: "", price_per_gram: "" },
+    { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "" },
   ]);
 
   const { data: inventory = [] } = useQuery({
@@ -59,7 +60,7 @@ export default function SaleFormNew() {
   const addItem = () => {
     setItems([
       ...items,
-      { inventory_item_id: "", item_name: "", weight: "", price_per_gram: "" },
+      { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "" },
     ]);
   };
 
@@ -75,6 +76,7 @@ export default function SaleFormNew() {
       const selectedItem = inventory.find((item) => item.id === value);
       if (selectedItem) {
         newItems[index].item_name = selectedItem.name;
+        newItems[index].category = selectedItem.category;
         newItems[index].price_per_gram = selectedItem.price_per_gram.toString();
         newItems[index].weight = selectedItem.weight.toString();
       }
@@ -127,6 +129,7 @@ export default function SaleFormNew() {
         sale_id: sale.id,
         inventory_item_id: item.inventory_item_id || null,
         item_name: item.item_name,
+        category: item.category,
         weight: parseFloat(item.weight),
         price_per_gram: parseFloat(item.price_per_gram),
         amount: parseFloat(item.weight) * parseFloat(item.price_per_gram),
@@ -146,7 +149,7 @@ export default function SaleFormNew() {
         description: "",
       });
       setItems([
-        { inventory_item_id: "", item_name: "", weight: "", price_per_gram: "" },
+        { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "" },
       ]);
       queryClient.invalidateQueries({ queryKey: ["sales"] });
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
@@ -228,7 +231,7 @@ export default function SaleFormNew() {
                 key={index}
                 className="grid grid-cols-12 gap-2 items-end p-3 border rounded-lg bg-muted/30"
               >
-                <div className="col-span-4 space-y-1">
+                <div className="col-span-3 space-y-1">
                   <Label className="text-xs">الصنف</Label>
                   <Select
                     value={item.inventory_item_id}
@@ -242,14 +245,24 @@ export default function SaleFormNew() {
                     <SelectContent>
                       {inventory.map((invItem) => (
                         <SelectItem key={invItem.id} value={invItem.id}>
-                          {invItem.name} ({invItem.karat})
+                          {invItem.name} - {invItem.category} ({invItem.karat})
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div className="col-span-3 space-y-1">
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-xs">الفئة</Label>
+                  <Input
+                    className="h-9"
+                    value={item.category}
+                    readOnly
+                    placeholder="تلقائي"
+                  />
+                </div>
+
+                <div className="col-span-2 space-y-1">
                   <Label className="text-xs">الوزن (جم)</Label>
                   <Input
                     type="number"
@@ -260,7 +273,7 @@ export default function SaleFormNew() {
                   />
                 </div>
 
-                <div className="col-span-3 space-y-1">
+                <div className="col-span-2 space-y-1">
                   <Label className="text-xs">سعر الجرام</Label>
                   <Input
                     type="number"
@@ -273,7 +286,7 @@ export default function SaleFormNew() {
                   />
                 </div>
 
-                <div className="col-span-2 flex items-center justify-between">
+                <div className="col-span-3 flex items-center justify-between">
                   <div className="text-sm font-semibold">
                     {(
                       (parseFloat(item.weight) || 0) *

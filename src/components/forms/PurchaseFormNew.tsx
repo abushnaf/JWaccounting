@@ -24,6 +24,7 @@ import { toast } from "sonner";
 interface PurchaseItem {
   inventory_item_id: string;
   item_name: string;
+  category: string;
   weight: string;
   price_per_gram: string;
 }
@@ -40,7 +41,7 @@ export default function PurchaseFormNew() {
   });
 
   const [items, setItems] = useState<PurchaseItem[]>([
-    { inventory_item_id: "", item_name: "", weight: "", price_per_gram: "" },
+    { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "" },
   ]);
 
   const { data: inventory = [] } = useQuery({
@@ -58,7 +59,7 @@ export default function PurchaseFormNew() {
   const addItem = () => {
     setItems([
       ...items,
-      { inventory_item_id: "", item_name: "", weight: "", price_per_gram: "" },
+      { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "" },
     ]);
   };
 
@@ -74,6 +75,7 @@ export default function PurchaseFormNew() {
       const selectedItem = inventory.find((item) => item.id === value);
       if (selectedItem) {
         newItems[index].item_name = selectedItem.name;
+        newItems[index].category = selectedItem.category;
         newItems[index].price_per_gram = selectedItem.price_per_gram.toString();
       }
     }
@@ -125,6 +127,7 @@ export default function PurchaseFormNew() {
         purchase_id: purchase.id,
         inventory_item_id: item.inventory_item_id || null,
         item_name: item.item_name,
+        category: item.category,
         weight: parseFloat(item.weight),
         price_per_gram: parseFloat(item.price_per_gram),
         amount: parseFloat(item.weight) * parseFloat(item.price_per_gram),
@@ -144,7 +147,7 @@ export default function PurchaseFormNew() {
         description: "",
       });
       setItems([
-        { inventory_item_id: "", item_name: "", weight: "", price_per_gram: "" },
+        { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "" },
       ]);
       queryClient.invalidateQueries({ queryKey: ["purchases"] });
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
@@ -226,7 +229,7 @@ export default function PurchaseFormNew() {
                 key={index}
                 className="grid grid-cols-12 gap-2 items-end p-3 border rounded-lg bg-muted/30"
               >
-                <div className="col-span-4 space-y-1">
+                <div className="col-span-3 space-y-1">
                   <Label className="text-xs">اسم الصنف</Label>
                   <Input
                     className="h-9"
@@ -236,7 +239,17 @@ export default function PurchaseFormNew() {
                   />
                 </div>
 
-                <div className="col-span-3 space-y-1">
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-xs">الفئة</Label>
+                  <Input
+                    className="h-9"
+                    value={item.category}
+                    onChange={(e) => updateItem(index, "category", e.target.value)}
+                    placeholder="ذهب، فضة، الخ"
+                  />
+                </div>
+
+                <div className="col-span-2 space-y-1">
                   <Label className="text-xs">الوزن (جم)</Label>
                   <Input
                     type="number"
@@ -247,7 +260,7 @@ export default function PurchaseFormNew() {
                   />
                 </div>
 
-                <div className="col-span-3 space-y-1">
+                <div className="col-span-2 space-y-1">
                   <Label className="text-xs">سعر الجرام</Label>
                   <Input
                     type="number"
@@ -260,7 +273,7 @@ export default function PurchaseFormNew() {
                   />
                 </div>
 
-                <div className="col-span-2 flex items-center justify-between">
+                <div className="col-span-3 flex items-center justify-between">
                   <div className="text-sm font-semibold">
                     {(
                       (parseFloat(item.weight) || 0) *

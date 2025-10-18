@@ -49,6 +49,7 @@ export type Database = {
       }
       inventory: {
         Row: {
+          category: string
           created_at: string | null
           id: string
           karat: string
@@ -60,6 +61,7 @@ export type Database = {
           weight: number
         }
         Insert: {
+          category?: string
           created_at?: string | null
           id?: string
           karat: string
@@ -71,6 +73,7 @@ export type Database = {
           weight?: number
         }
         Update: {
+          category?: string
           created_at?: string | null
           id?: string
           karat?: string
@@ -86,6 +89,7 @@ export type Database = {
       purchase_items: {
         Row: {
           amount: number
+          category: string | null
           created_at: string | null
           id: string
           inventory_item_id: string | null
@@ -96,6 +100,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          category?: string | null
           created_at?: string | null
           id?: string
           inventory_item_id?: string | null
@@ -106,6 +111,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          category?: string | null
           created_at?: string | null
           id?: string
           inventory_item_id?: string | null
@@ -194,6 +200,7 @@ export type Database = {
       sales_items: {
         Row: {
           amount: number
+          category: string | null
           created_at: string | null
           id: string
           inventory_item_id: string | null
@@ -204,6 +211,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          category?: string | null
           created_at?: string | null
           id?: string
           inventory_item_id?: string | null
@@ -214,6 +222,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          category?: string | null
           created_at?: string | null
           id?: string
           inventory_item_id?: string | null

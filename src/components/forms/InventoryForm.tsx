@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+const categoryTypes = ["ذهب", "فضة", "ماس", "أحجار كريمة"];
 const karatTypes = ["24K", "21K", "18K", "14K", "فضة"];
 
 export default function InventoryForm() {
@@ -30,6 +31,7 @@ export default function InventoryForm() {
 
   const [formData, setFormData] = useState({
     name: "",
+    category: "ذهب",
     karat: "21K",
     weight: "",
     price_per_gram: "",
@@ -43,6 +45,7 @@ export default function InventoryForm() {
     try {
       const { error } = await supabase.from("inventory").insert({
         name: formData.name,
+        category: formData.category,
         karat: formData.karat,
         weight: parseFloat(formData.weight),
         price_per_gram: parseFloat(formData.price_per_gram),
@@ -56,6 +59,7 @@ export default function InventoryForm() {
       setOpen(false);
       setFormData({
         name: "",
+        category: "ذهب",
         karat: "21K",
         weight: "",
         price_per_gram: "",
@@ -91,6 +95,25 @@ export default function InventoryForm() {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="category">الفئة</Label>
+            <Select
+              value={formData.category}
+              onValueChange={(value) => setFormData({ ...formData, category: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {categoryTypes.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
