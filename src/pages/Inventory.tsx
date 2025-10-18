@@ -1,0 +1,174 @@
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Search, Package, AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const karatTypes = ["24K", "21K", "18K", "14K"];
+
+const sampleItems = [
+  { id: 1, name: "خاتم ذهب", karat: "21K", weight: 5.5, price: 2750, stock: 12, status: "متوفر" },
+  { id: 2, name: "سلسلة ذهبية", karat: "18K", weight: 15.2, price: 6080, stock: 5, status: "متوفر" },
+  { id: 3, name: "أقراط ماسية", karat: "18K", weight: 3.8, price: 8500, stock: 2, status: "منخفض" },
+  { id: 4, name: "سوار فضة", karat: "-", weight: 25.0, price: 1200, stock: 8, status: "متوفر" },
+];
+
+export default function Inventory() {
+  const [karatFilter, setKaratFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredItems = sampleItems.filter(item => {
+    const matchesKarat = karatFilter === "all" || item.karat === karatFilter;
+    const matchesSearch = item.name.includes(searchQuery);
+    return matchesKarat && matchesSearch;
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="shadow-md">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              إجمالي القطع
+            </CardTitle>
+            <Package className="w-4 h-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-primary">27</div>
+            <div className="flex items-center gap-1 text-xs text-success">
+              <TrendingUp className="w-3 h-3" />
+              <span>+12% من الشهر الماضي</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-md">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              وزن الذهب الكلي
+            </CardTitle>
+            <Package className="w-4 h-4 text-secondary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-secondary">524.5 جم</div>
+            <p className="text-xs text-muted-foreground mt-1">من جميع الأعيرة</p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-md">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              قيمة المخزون
+            </CardTitle>
+            <TrendingUp className="w-4 h-4 text-success" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">262,500 د.ل</div>
+            <p className="text-xs text-muted-foreground mt-1">السعر الإجمالي</p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-md border-destructive/20">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              منخفض المخزون
+            </CardTitle>
+            <AlertCircle className="w-4 h-4 text-destructive" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-destructive">3</div>
+            <p className="text-xs text-muted-foreground mt-1">يحتاج إلى إعادة الطلب</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Inventory Management */}
+      <Card className="shadow-md">
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <CardTitle className="text-xl">إدارة المخزون</CardTitle>
+            <Button className="gap-2 bg-secondary hover:bg-secondary/90 text-secondary-foreground">
+              <Plus className="w-4 h-4" />
+              إضافة قطعة جديدة
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Filters */}
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="البحث في المخزون..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pr-10"
+              />
+            </div>
+            <Select value={karatFilter} onValueChange={setKaratFilter}>
+              <SelectTrigger className="w-full md:w-[180px]">
+                <SelectValue placeholder="العيار" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">كل الأعيرة</SelectItem>
+                {karatTypes.map(karat => (
+                  <SelectItem key={karat} value={karat}>{karat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Items Table */}
+          <div className="border rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-muted/50">
+                  <tr>
+                    <th className="text-right p-3 text-sm font-medium">اسم القطعة</th>
+                    <th className="text-right p-3 text-sm font-medium">العيار</th>
+                    <th className="text-right p-3 text-sm font-medium">الوزن (جم)</th>
+                    <th className="text-right p-3 text-sm font-medium">السعر (د.ل)</th>
+                    <th className="text-right p-3 text-sm font-medium">المخزون</th>
+                    <th className="text-right p-3 text-sm font-medium">الحالة</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {filteredItems.map((item) => (
+                    <tr key={item.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="p-3 font-medium">{item.name}</td>
+                      <td className="p-3">
+                        <Badge variant="outline" className="font-semibold">
+                          {item.karat}
+                        </Badge>
+                      </td>
+                      <td className="p-3 text-muted-foreground">{item.weight}</td>
+                      <td className="p-3 font-semibold text-secondary">{item.price.toLocaleString()}</td>
+                      <td className="p-3">{item.stock}</td>
+                      <td className="p-3">
+                        <Badge 
+                          variant={item.status === "متوفر" ? "default" : "destructive"}
+                          className={item.status === "متوفر" ? "bg-success" : ""}
+                        >
+                          {item.status}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

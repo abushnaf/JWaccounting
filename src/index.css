@@ -1,0 +1,144 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Professional jewelry ERP colors */
+    --background: 240 15% 97%;
+    --foreground: 220 25% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 25% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 15%;
+
+    /* Deep blue primary with gold accents */
+    --primary: 220 70% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 45 95% 50%;
+    --secondary-foreground: 220 25% 15%;
+
+    --muted: 220 15% 93%;
+    --muted-foreground: 220 15% 45%;
+
+    --accent: 45 90% 55%;
+    --accent-foreground: 220 25% 15%;
+
+    --destructive: 0 75% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 220 70% 35%;
+
+    --radius: 0.75rem;
+
+    /* Success & Info colors */
+    --success: 145 65% 45%;
+    --success-foreground: 0 0% 100%;
+    
+    --info: 200 80% 50%;
+    --info-foreground: 0 0% 100%;
+
+    /* Sidebar colors */
+    --sidebar-background: 220 25% 15%;
+    --sidebar-foreground: 220 10% 85%;
+    --sidebar-primary: 45 95% 50%;
+    --sidebar-primary-foreground: 220 25% 15%;
+    --sidebar-accent: 220 25% 20%;
+    --sidebar-accent-foreground: 220 10% 85%;
+    --sidebar-border: 220 25% 25%;
+    --sidebar-ring: 45 95% 50%;
+
+    /* Shadow & Effects */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-gold: 0 4px 20px -2px rgba(245, 158, 11, 0.2);
+  }
+
+  .dark {
+    --background: 220 25% 10%;
+    --foreground: 220 10% 90%;
+
+    --card: 220 25% 12%;
+    --card-foreground: 220 10% 90%;
+
+    --popover: 220 25% 12%;
+    --popover-foreground: 220 10% 90%;
+
+    --primary: 220 70% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 45 95% 55%;
+    --secondary-foreground: 220 25% 10%;
+
+    --muted: 220 25% 18%;
+    --muted-foreground: 220 10% 65%;
+
+    --accent: 45 90% 60%;
+    --accent-foreground: 220 25% 10%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 25% 20%;
+    --input: 220 25% 20%;
+    --ring: 220 70% 50%;
+
+    --success: 145 65% 50%;
+    --success-foreground: 0 0% 100%;
+    
+    --info: 200 80% 55%;
+    --info-foreground: 0 0% 100%;
+
+    --sidebar-background: 220 30% 8%;
+    --sidebar-foreground: 220 10% 85%;
+    --sidebar-primary: 45 95% 50%;
+    --sidebar-primary-foreground: 220 30% 8%;
+    --sidebar-accent: 220 25% 15%;
+    --sidebar-accent-foreground: 220 10% 85%;
+    --sidebar-border: 220 25% 18%;
+    --sidebar-ring: 45 95% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "kern" 1;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* RTL Support */
+  [dir="rtl"] {
+    direction: rtl;
+  }
+
+  [dir="rtl"] .rtl-mirror {
+    transform: scaleX(-1);
+  }
+}
+
+@layer utilities {
+  .shadow-gold {
+    box-shadow: var(--shadow-gold);
+  }
+  
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
