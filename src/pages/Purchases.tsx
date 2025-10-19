@@ -1,11 +1,16 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShoppingBag, Package, TrendingDown } from "lucide-react";
+import { ShoppingBag, Package, TrendingDown, Eye } from "lucide-react";
 import PurchaseFormNew from "@/components/forms/PurchaseFormNew";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import InvoiceDetailDialog from "@/components/InvoiceDetailDialog";
 
 export default function Purchases() {
+  const [selectedPurchase, setSelectedPurchase] = useState<string | null>(null);
+  
   const { data: purchases = [], isLoading } = useQuery({
     queryKey: ["purchases"],
     queryFn: async () => {
@@ -18,6 +23,23 @@ export default function Purchases() {
       return data;
     },
   });
+
+  const { data: purchaseItems = [] } = useQuery({
+    queryKey: ["purchase_items", selectedPurchase],
+    queryFn: async () => {
+      if (!selectedPurchase) return [];
+      const { data, error } = await supabase
+        .from("purchase_items")
+        .select("*")
+        .eq("purchase_id", selectedPurchase);
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedPurchase,
+  });
+
+  const selectedPurchaseData = purchases.find((p) => p.id === selectedPurchase);
 
   const monthTotal = purchases.reduce((sum, purchase) => sum + Number(purchase.amount), 0);
   const averagePrice = purchases.length > 0 ? monthTotal / purchases.length : 0;
@@ -102,6 +124,7 @@ export default function Purchases() {
                       <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">الوصف</th>
                       <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">المبلغ الإجمالي</th>
                       <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">طريقة الدفع</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">الإجراءات</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -117,6 +140,17 @@ export default function Purchases() {
                         <td className="p-2 md:p-3">
                           <Badge variant="outline" className="text-xs">{purchase.payment_method}</Badge>
                         </td>
+                        <td className="p-2 md:p-3">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedPurchase(purchase.id)}
+                            className="h-8"
+                          >
+                            <Eye className="w-4 h-4 ml-2" />
+                            عرض
+                          </Button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -126,6 +160,14 @@ export default function Purchases() {
           )}
         </CardContent>
       </Card>
+
+      <InvoiceDetailDialog
+        open={!!selectedPurchase}
+        onOpenChange={(open) => !open && setSelectedPurchase(null)}
+        invoice={selectedPurchaseData || null}
+        items={purchaseItems}
+        type="purchase"
+      />
     </div>
   );
 }

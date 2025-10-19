@@ -1,11 +1,16 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShoppingCart, DollarSign, TrendingUp } from "lucide-react";
+import { ShoppingCart, DollarSign, TrendingUp, Eye } from "lucide-react";
 import SaleFormNew from "@/components/forms/SaleFormNew";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import InvoiceDetailDialog from "@/components/InvoiceDetailDialog";
 
 export default function Sales() {
+  const [selectedSale, setSelectedSale] = useState<string | null>(null);
+  
   const { data: sales = [], isLoading } = useQuery({
     queryKey: ["sales"],
     queryFn: async () => {
@@ -18,6 +23,23 @@ export default function Sales() {
       return data;
     },
   });
+
+  const { data: saleItems = [] } = useQuery({
+    queryKey: ["sale_items", selectedSale],
+    queryFn: async () => {
+      if (!selectedSale) return [];
+      const { data, error } = await supabase
+        .from("sales_items")
+        .select("*")
+        .eq("sale_id", selectedSale);
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedSale,
+  });
+
+  const selectedSaleData = sales.find((s) => s.id === selectedSale);
 
   const todaySales = sales.filter(
     (sale) => sale.date === new Date().toISOString().split('T')[0]
@@ -112,6 +134,7 @@ export default function Sales() {
                       <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">الوصف</th>
                       <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">المبلغ الإجمالي</th>
                       <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">طريقة الدفع</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">الإجراءات</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -127,6 +150,17 @@ export default function Sales() {
                         <td className="p-2 md:p-3">
                           <Badge variant="outline" className="text-xs">{sale.payment_method}</Badge>
                         </td>
+                        <td className="p-2 md:p-3">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedSale(sale.id)}
+                            className="h-8"
+                          >
+                            <Eye className="w-4 h-4 ml-2" />
+                            عرض
+                          </Button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -136,6 +170,14 @@ export default function Sales() {
           )}
         </CardContent>
       </Card>
+
+      <InvoiceDetailDialog
+        open={!!selectedSale}
+        onOpenChange={(open) => !open && setSelectedSale(null)}
+        invoice={selectedSaleData || null}
+        items={saleItems}
+        type="sale"
+      />
     </div>
   );
 }
