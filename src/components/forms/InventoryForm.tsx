@@ -172,6 +172,23 @@ export default function InventoryForm() {
             />
           </div>
 
+          {/* Total Display */}
+          {formData.weight && formData.price_per_gram && formData.stock && (
+            <div className="p-4 bg-muted/50 rounded-lg border border-border">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-muted-foreground">الإجمالي:</span>
+                <span className="text-xl font-bold text-secondary">
+                  {(
+                    parseFloat(formData.weight) *
+                    parseFloat(formData.price_per_gram) *
+                    parseInt(formData.stock)
+                  ).toLocaleString(undefined, { maximumFractionDigits: 2 })}{" "}
+                  د.ل
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-end gap-2 pt-4">
             <Button
               type="button"

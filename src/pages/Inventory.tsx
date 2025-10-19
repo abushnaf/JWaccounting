@@ -163,34 +163,44 @@ export default function Inventory() {
                 <table className="w-full">
                   <thead className="bg-muted/50">
                     <tr>
-                      <th className="text-right p-3 text-sm font-medium">اسم القطعة</th>
-                      <th className="text-right p-3 text-sm font-medium">العيار</th>
-                      <th className="text-right p-3 text-sm font-medium">الوزن (جم)</th>
-                      <th className="text-right p-3 text-sm font-medium">سعر الجرام</th>
-                      <th className="text-right p-3 text-sm font-medium">المخزون</th>
-                      <th className="text-right p-3 text-sm font-medium">الحالة</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">اسم القطعة</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">الفئة</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">العيار</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">الوزن (جم)</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">سعر الجرام</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">المخزون</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">الإجمالي</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">الحالة</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     {filteredItems.map((item) => (
-                      <tr key={item.id} className="hover:bg-muted/30 transition-colors">
-                        <td className="p-3 font-medium">{item.name}</td>
-                        <td className="p-3">
-                          <Badge variant="outline" className="font-semibold">
+                      <tr key={item.id} className="hover:bg-muted/30 transition-smooth">
+                        <td className="p-2 md:p-3 text-xs md:text-sm font-medium">{item.name}</td>
+                        <td className="p-2 md:p-3 text-xs md:text-sm">
+                          <Badge variant="outline" className="text-xs">
+                            {item.category}
+                          </Badge>
+                        </td>
+                        <td className="p-2 md:p-3 text-xs md:text-sm">
+                          <Badge variant="outline" className="text-xs font-semibold">
                             {item.karat}
                           </Badge>
                         </td>
-                        <td className="p-3 text-muted-foreground">
+                        <td className="p-2 md:p-3 text-xs md:text-sm text-muted-foreground">
                           {Number(item.weight).toFixed(2)}
                         </td>
-                        <td className="p-3 font-semibold text-secondary">
-                          {Number(item.price_per_gram).toLocaleString()} د.ل
+                        <td className="p-2 md:p-3 text-xs md:text-sm font-semibold text-secondary">
+                          {Number(item.price_per_gram).toLocaleString()}
                         </td>
-                        <td className="p-3">{item.stock}</td>
-                        <td className="p-3">
+                        <td className="p-2 md:p-3 text-xs md:text-sm">{item.stock}</td>
+                        <td className="p-2 md:p-3 text-xs md:text-sm font-bold text-primary">
+                          {(Number(item.weight) * Number(item.price_per_gram) * item.stock).toLocaleString(undefined, { maximumFractionDigits: 0 })} د.ل
+                        </td>
+                        <td className="p-2 md:p-3">
                           <Badge 
                             variant={item.status === "متوفر" ? "default" : "destructive"}
-                            className={item.status === "متوفر" ? "bg-success" : ""}
+                            className={`text-xs ${item.status === "متوفر" ? "bg-success" : ""}`}
                           >
                             {item.status}
                           </Badge>

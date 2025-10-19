@@ -98,24 +98,24 @@ export default function Purchases() {
                 <table className="w-full">
                   <thead className="bg-muted/50">
                     <tr>
-                      <th className="text-right p-3 text-sm font-medium">التاريخ</th>
-                      <th className="text-right p-3 text-sm font-medium">الوصف</th>
-                      <th className="text-right p-3 text-sm font-medium">المبلغ</th>
-                      <th className="text-right p-3 text-sm font-medium">طريقة الدفع</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">التاريخ</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">الوصف</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">المبلغ الإجمالي</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">طريقة الدفع</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     {purchases.map((purchase) => (
-                      <tr key={purchase.id} className="hover:bg-muted/30 transition-colors">
-                        <td className="p-3 text-muted-foreground">
+                      <tr key={purchase.id} className="hover:bg-muted/30 transition-smooth">
+                        <td className="p-2 md:p-3 text-xs md:text-sm text-muted-foreground">
                           {new Date(purchase.date).toLocaleDateString('ar-LY')}
                         </td>
-                        <td className="p-3">{purchase.description}</td>
-                        <td className="p-3 font-semibold text-secondary">
-                          {Number(purchase.amount).toLocaleString()} د.ل
+                        <td className="p-2 md:p-3 text-xs md:text-sm">{purchase.description}</td>
+                        <td className="p-2 md:p-3 text-sm md:text-base font-bold text-secondary">
+                          {Number(purchase.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })} د.ل
                         </td>
-                        <td className="p-3">
-                          <Badge variant="outline">{purchase.payment_method}</Badge>
+                        <td className="p-2 md:p-3">
+                          <Badge variant="outline" className="text-xs">{purchase.payment_method}</Badge>
                         </td>
                       </tr>
                     ))}

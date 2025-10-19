@@ -108,24 +108,24 @@ export default function Sales() {
                 <table className="w-full">
                   <thead className="bg-muted/50">
                     <tr>
-                      <th className="text-right p-3 text-sm font-medium">التاريخ</th>
-                      <th className="text-right p-3 text-sm font-medium">الوصف</th>
-                      <th className="text-right p-3 text-sm font-medium">المبلغ</th>
-                      <th className="text-right p-3 text-sm font-medium">طريقة الدفع</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">التاريخ</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">الوصف</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">المبلغ الإجمالي</th>
+                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">طريقة الدفع</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     {sales.map((sale) => (
-                      <tr key={sale.id} className="hover:bg-muted/30 transition-colors">
-                        <td className="p-3 text-muted-foreground">
+                      <tr key={sale.id} className="hover:bg-muted/30 transition-smooth">
+                        <td className="p-2 md:p-3 text-xs md:text-sm text-muted-foreground">
                           {new Date(sale.date).toLocaleDateString('ar-LY')}
                         </td>
-                        <td className="p-3">{sale.description}</td>
-                        <td className="p-3 font-semibold text-secondary">
-                          {Number(sale.amount).toLocaleString()} د.ل
+                        <td className="p-2 md:p-3 text-xs md:text-sm">{sale.description}</td>
+                        <td className="p-2 md:p-3 text-sm md:text-base font-bold text-secondary">
+                          {Number(sale.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })} د.ل
                         </td>
-                        <td className="p-3">
-                          <Badge variant="outline">{sale.payment_method}</Badge>
+                        <td className="p-2 md:p-3">
+                          <Badge variant="outline" className="text-xs">{sale.payment_method}</Badge>
                         </td>
                       </tr>
                     ))}
