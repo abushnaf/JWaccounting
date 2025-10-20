@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings as SettingsIcon, DollarSign, Database } from "lucide-react";
+import { Settings as SettingsIcon, DollarSign } from "lucide-react";
 import UserManagement from "@/components/UserManagement";
+import BackupButton from "@/components/BackupButton";
 
 export default function Settings() {
   return (
@@ -44,19 +45,15 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-md cursor-pointer hover:shadow-gold transition-smooth btn-active">
+        <Card className="shadow-md">
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
-                <Database className="w-5 h-5 text-success" />
-              </div>
-              <CardTitle className="text-sm md:text-base">النسخ الاحتياطي</CardTitle>
-            </div>
+            <CardTitle className="text-sm md:text-base">النسخ الاحتياطي</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <p className="text-xs md:text-sm text-muted-foreground">
-              إعدادات النسخ الاحتياطي التلقائي والمزامنة
+              قم بتحميل نسخة احتياطية من جميع البيانات في قاعدة البيانات
             </p>
+            <BackupButton />
           </CardContent>
         </Card>
       </div>

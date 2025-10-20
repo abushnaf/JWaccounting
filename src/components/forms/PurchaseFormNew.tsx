@@ -28,7 +28,10 @@ interface PurchaseItem {
   weight: string;
   price_per_gram: string;
   quantity: string;
+  condition: string;
 }
+
+const conditionTypes = ["جديد", "مستعمل", "إعادة تصنيع"];
 
 export default function PurchaseFormNew() {
   const [open, setOpen] = useState(false);
@@ -42,7 +45,7 @@ export default function PurchaseFormNew() {
   });
 
   const [items, setItems] = useState<PurchaseItem[]>([
-    { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1" },
+    { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1", condition: "جديد" },
   ]);
 
   const { data: inventory = [] } = useQuery({
@@ -60,7 +63,7 @@ export default function PurchaseFormNew() {
   const addItem = () => {
     setItems([
       ...items,
-      { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1" },
+      { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1", condition: "جديد" },
     ]);
   };
 
@@ -134,6 +137,7 @@ export default function PurchaseFormNew() {
         price_per_gram: parseFloat(item.price_per_gram),
         quantity: parseInt(item.quantity),
         amount: parseFloat(item.weight) * parseFloat(item.price_per_gram) * parseInt(item.quantity),
+        condition: item.condition,
       }));
 
       const { error: itemsError } = await supabase
@@ -150,7 +154,7 @@ export default function PurchaseFormNew() {
         description: "",
       });
       setItems([
-        { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1" },
+        { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1", condition: "جديد" },
       ]);
       queryClient.invalidateQueries({ queryKey: ["purchases"] });
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
@@ -232,7 +236,7 @@ export default function PurchaseFormNew() {
                 key={index}
                 className="grid grid-cols-12 gap-2 items-end p-3 border rounded-lg bg-muted/30"
               >
-                <div className="col-span-3 space-y-1">
+                <div className="col-span-2 space-y-1">
                   <Label className="text-xs">اسم الصنف</Label>
                   <Input
                     className="h-9"
@@ -252,6 +256,25 @@ export default function PurchaseFormNew() {
                   />
                 </div>
 
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-xs">الحالة</Label>
+                  <Select
+                    value={item.condition}
+                    onValueChange={(value) => updateItem(index, "condition", value)}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {conditionTypes.map((condition) => (
+                        <SelectItem key={condition} value={condition}>
+                          {condition}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="col-span-1 space-y-1">
                   <Label className="text-xs">الكمية</Label>
                   <Input
@@ -263,7 +286,7 @@ export default function PurchaseFormNew() {
                   />
                 </div>
 
-                <div className="col-span-2 space-y-1">
+                <div className="col-span-1 space-y-1">
                   <Label className="text-xs">الوزن (جم)</Label>
                   <Input
                     type="number"
