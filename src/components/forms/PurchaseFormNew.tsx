@@ -25,6 +25,7 @@ interface PurchaseItem {
   inventory_item_id: string;
   item_name: string;
   category: string;
+  condition?: string;
   weight: string;
   price_per_gram: string;
   quantity: string;
@@ -42,7 +43,7 @@ export default function PurchaseFormNew() {
   });
 
   const [items, setItems] = useState<PurchaseItem[]>([
-    { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1" },
+    { inventory_item_id: "", item_name: "", category: "", condition: "New", weight: "", price_per_gram: "", quantity: "1" },
   ]);
 
   const { data: inventory = [] } = useQuery({
@@ -77,6 +78,7 @@ export default function PurchaseFormNew() {
       if (selectedItem) {
         newItems[index].item_name = selectedItem.name;
         newItems[index].category = selectedItem.category;
+        newItems[index].condition = selectedItem.condition || 'New';
         newItems[index].price_per_gram = selectedItem.price_per_gram.toString();
       }
     }
@@ -130,6 +132,7 @@ export default function PurchaseFormNew() {
         inventory_item_id: item.inventory_item_id || null,
         item_name: item.item_name,
         category: item.category,
+        condition: item.condition || 'New',
         weight: parseFloat(item.weight),
         price_per_gram: parseFloat(item.price_per_gram),
         quantity: parseInt(item.quantity),
@@ -150,7 +153,7 @@ export default function PurchaseFormNew() {
         description: "",
       });
       setItems([
-        { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1" },
+        { inventory_item_id: "", item_name: "", category: "", condition: "New", weight: "", price_per_gram: "", quantity: "1" },
       ]);
       queryClient.invalidateQueries({ queryKey: ["purchases"] });
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
@@ -175,7 +178,7 @@ export default function PurchaseFormNew() {
           <DialogTitle>طلب شراء جديد</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="date">التاريخ</Label>
               <Input
@@ -230,16 +233,25 @@ export default function PurchaseFormNew() {
             {items.map((item, index) => (
               <div
                 key={index}
-                className="grid grid-cols-12 gap-2 items-end p-3 border rounded-lg bg-muted/30"
+                className="grid grid-cols-2 sm:grid-cols-12 gap-2 items-end p-3 border rounded-lg bg-muted/30"
               >
                 <div className="col-span-3 space-y-1">
-                  <Label className="text-xs">اسم الصنف</Label>
-                  <Input
-                    className="h-9"
-                    value={item.item_name}
-                    onChange={(e) => updateItem(index, "item_name", e.target.value)}
-                    placeholder="أدخل اسم الصنف"
-                  />
+                  <Label className="text-xs">الصنف</Label>
+                  <Select
+                    value={item.inventory_item_id}
+                    onValueChange={(value) => updateItem(index, "inventory_item_id", value)}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="اختر من المخزون" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {inventory.map((invItem) => (
+                        <SelectItem key={invItem.id} value={invItem.id}>
+                          {invItem.name} - {invItem.category} ({invItem.karat})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="col-span-2 space-y-1">
@@ -247,8 +259,18 @@ export default function PurchaseFormNew() {
                   <Input
                     className="h-9"
                     value={item.category}
-                    onChange={(e) => updateItem(index, "category", e.target.value)}
-                    placeholder="ذهب، فضة، الخ"
+                    readOnly
+                    placeholder="تلقائي"
+                  />
+                </div>
+
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-xs">الحالة</Label>
+                  <Input
+                    className="h-9"
+                    value={item.condition || 'New'}
+                    readOnly
+                    placeholder="تلقائي"
                   />
                 </div>
 

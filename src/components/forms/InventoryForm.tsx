@@ -22,6 +22,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const categoryTypes = ["ذهب", "فضة", "ماس", "أحجار كريمة"];
+const conditionTypes = ["New", "Used", "Broken"];
 const karatTypes = ["24K", "21K", "18K", "14K", "فضة"];
 
 export default function InventoryForm() {
@@ -36,6 +37,7 @@ export default function InventoryForm() {
     weight: "",
     price_per_gram: "",
     stock: "1",
+    condition: "New",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,6 +52,7 @@ export default function InventoryForm() {
         weight: parseFloat(formData.weight),
         price_per_gram: parseFloat(formData.price_per_gram),
         stock: parseInt(formData.stock),
+        condition: formData.condition,
         status: parseInt(formData.stock) > 5 ? "متوفر" : "منخفض",
       });
 
@@ -64,6 +67,7 @@ export default function InventoryForm() {
         weight: "",
         price_per_gram: "",
         stock: "1",
+        condition: "New",
       });
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
     } catch (error) {
@@ -129,6 +133,25 @@ export default function InventoryForm() {
                 {karatTypes.map((karat) => (
                   <SelectItem key={karat} value={karat}>
                     {karat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="condition">حالة القطعة</Label>
+            <Select
+              value={formData.condition}
+              onValueChange={(value) => setFormData({ ...formData, condition: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {conditionTypes.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
                   </SelectItem>
                 ))}
               </SelectContent>

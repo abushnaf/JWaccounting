@@ -22,6 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { UserPlus, Shield, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useRoleManagement } from "@/hooks/usePermissions";
 
 type AppRole = "admin" | "seller" | "accountant";
 
@@ -35,6 +36,7 @@ export default function UserManagement() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
+  const { canManageUsers } = useRoleManagement();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -125,6 +127,24 @@ export default function UserManagement() {
       toast.error("حدث خطأ أثناء حذف المستخدم");
     }
   };
+
+  if (!canManageUsers()) {
+    return (
+      <Card className="shadow-md">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="w-5 h-5" />
+            إدارة المستخدمين والصلاحيات
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground text-center py-8">
+            ليس لديك صلاحية لإدارة المستخدمين والصلاحيات
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="shadow-md">

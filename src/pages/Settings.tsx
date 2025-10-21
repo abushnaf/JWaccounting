@@ -1,12 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Settings as SettingsIcon, DollarSign, Database } from "lucide-react";
 import UserManagement from "@/components/UserManagement";
+import RoleManagement from "@/components/RoleManagement";
 
 export default function Settings() {
   return (
     <div className="space-y-6">
       <h2 className="text-xl md:text-2xl font-bold">الإعدادات</h2>
       
+      {/* Role Management Section */}
+      <RoleManagement />
+
       {/* User Management Section */}
       <UserManagement />
 

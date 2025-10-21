@@ -25,6 +25,7 @@ interface SaleItem {
   inventory_item_id: string;
   item_name: string;
   category: string;
+  condition?: string;
   weight: string;
   price_per_gram: string;
   quantity: string;
@@ -42,7 +43,7 @@ export default function SaleFormNew() {
   });
 
   const [items, setItems] = useState<SaleItem[]>([
-    { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1" },
+    { inventory_item_id: "", item_name: "", category: "", condition: "", weight: "", price_per_gram: "", quantity: "1" },
   ]);
 
   const { data: inventory = [] } = useQuery({
@@ -51,7 +52,6 @@ export default function SaleFormNew() {
       const { data, error } = await supabase
         .from("inventory")
         .select("*")
-        .gt("stock", 0)
         .order("name");
       if (error) throw error;
       return data;
@@ -78,6 +78,7 @@ export default function SaleFormNew() {
       if (selectedItem) {
         newItems[index].item_name = selectedItem.name;
         newItems[index].category = selectedItem.category;
+        newItems[index].condition = selectedItem.condition;
         newItems[index].price_per_gram = selectedItem.price_per_gram.toString();
         newItems[index].weight = selectedItem.weight.toString();
       }
@@ -110,6 +111,18 @@ export default function SaleFormNew() {
     setLoading(true);
 
     try {
+      // Client-side stock validation per item
+      for (const item of items) {
+        if (item.inventory_item_id) {
+          const inv = inventory.find((i: any) => i.id === item.inventory_item_id);
+          const requestedQty = parseInt(item.quantity || '0');
+          const available = inv?.stock ?? 0;
+          if (available <= 0 || requestedQty > available) {
+            toast.error("Insufficient stock: This item is out of inventory.");
+            return;
+          }
+        }
+      }
       const totalAmount = calculateTotal();
 
       // Insert sale
@@ -132,6 +145,7 @@ export default function SaleFormNew() {
         inventory_item_id: item.inventory_item_id || null,
         item_name: item.item_name,
         category: item.category,
+        condition: item.condition || null,
         weight: parseFloat(item.weight),
         price_per_gram: parseFloat(item.price_per_gram),
         quantity: parseInt(item.quantity),
@@ -152,7 +166,7 @@ export default function SaleFormNew() {
         description: "",
       });
       setItems([
-        { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1" },
+        { inventory_item_id: "", item_name: "", category: "", condition: "", weight: "", price_per_gram: "", quantity: "1" },
       ]);
       queryClient.invalidateQueries({ queryKey: ["sales"] });
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
@@ -177,7 +191,7 @@ export default function SaleFormNew() {
           <DialogTitle>فاتورة بيع جديدة</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="date">التاريخ</Label>
               <Input
@@ -232,7 +246,7 @@ export default function SaleFormNew() {
             {items.map((item, index) => (
               <div
                 key={index}
-                className="grid grid-cols-12 gap-2 items-end p-3 border rounded-lg bg-muted/30"
+                className="grid grid-cols-2 sm:grid-cols-12 gap-2 items-end p-3 border rounded-lg bg-muted/30"
               >
                 <div className="col-span-3 space-y-1">
                   <Label className="text-xs">الصنف</Label>
@@ -248,7 +262,7 @@ export default function SaleFormNew() {
                     <SelectContent>
                       {inventory.map((invItem) => (
                         <SelectItem key={invItem.id} value={invItem.id}>
-                          {invItem.name} - {invItem.category} ({invItem.karat})
+                          {invItem.name} - {invItem.category} ({invItem.karat}) - متاح: {invItem.stock}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -260,6 +274,16 @@ export default function SaleFormNew() {
                   <Input
                     className="h-9"
                     value={item.category}
+                    readOnly
+                    placeholder="تلقائي"
+                  />
+                </div>
+
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-xs">الحالة</Label>
+                  <Input
+                    className="h-9"
+                    value={item.condition || ''}
                     readOnly
                     placeholder="تلقائي"
                   />
