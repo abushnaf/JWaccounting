@@ -29,7 +29,11 @@ interface SaleItem {
   weight: string;
   price_per_gram: string;
   quantity: string;
+ // condition: string;
+  available_stock?: number;
 }
+
+const conditionTypes = ["جديد", "مستعمل", "إعادة تصنيع"];
 
 export default function SaleFormNew() {
   const [open, setOpen] = useState(false);
@@ -43,7 +47,11 @@ export default function SaleFormNew() {
   });
 
   const [items, setItems] = useState<SaleItem[]>([
+<<<<<<< HEAD
     { inventory_item_id: "", item_name: "", category: "", condition: "", weight: "", price_per_gram: "", quantity: "1" },
+=======
+ //   { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1", condition: "جديد" },
+>>>>>>> ec2d546d2a5083627fdca0db53a3fbb401014f03
   ]);
 
   const { data: inventory = [] } = useQuery({
@@ -61,7 +69,7 @@ export default function SaleFormNew() {
   const addItem = () => {
     setItems([
       ...items,
-      { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1" },
+      { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1", condition: "جديد" },
     ]);
   };
 
@@ -69,11 +77,13 @@ export default function SaleFormNew() {
     setItems(items.filter((_, i) => i !== index));
   };
 
-  const updateItem = (index: number, field: keyof SaleItem, value: string) => {
+  const updateItem = (index: number, field: keyof SaleItem, value: string | number) => {
     const newItems = [...items];
-    newItems[index][field] = value;
-
-    if (field === "inventory_item_id") {
+    
+    if (field === "available_stock") {
+      newItems[index][field] = value as number;
+    } else if (field === "inventory_item_id") {
+      newItems[index][field] = value as string;
       const selectedItem = inventory.find((item) => item.id === value);
       if (selectedItem) {
         newItems[index].item_name = selectedItem.name;
@@ -81,7 +91,10 @@ export default function SaleFormNew() {
         newItems[index].condition = selectedItem.condition;
         newItems[index].price_per_gram = selectedItem.price_per_gram.toString();
         newItems[index].weight = selectedItem.weight.toString();
+        newItems[index].available_stock = selectedItem.stock;
       }
+    } else {
+      newItems[index][field as keyof Omit<SaleItem, "available_stock">] = value as string;
     }
 
     setItems(newItems);
@@ -106,6 +119,15 @@ export default function SaleFormNew() {
     if (validItems.length === 0) {
       toast.error("يجب إضافة صنف واحد على الأقل");
       return;
+    }
+
+    // Check stock availability
+    for (const item of validItems) {
+      const quantity = parseInt(item.quantity) || 1;
+      if (item.available_stock !== undefined && quantity > item.available_stock) {
+        toast.error(`الكمية المطلوبة من ${item.item_name} تتجاوز المخزون المتاح (${item.available_stock})`);
+        return;
+      }
     }
 
     setLoading(true);
@@ -150,6 +172,7 @@ export default function SaleFormNew() {
         price_per_gram: parseFloat(item.price_per_gram),
         quantity: parseInt(item.quantity),
         amount: parseFloat(item.weight) * parseFloat(item.price_per_gram) * parseInt(item.quantity),
+        condition: item.condition,
       }));
 
       const { error: itemsError } = await supabase
@@ -166,7 +189,11 @@ export default function SaleFormNew() {
         description: "",
       });
       setItems([
+<<<<<<< HEAD
         { inventory_item_id: "", item_name: "", category: "", condition: "", weight: "", price_per_gram: "", quantity: "1" },
+=======
+   //     { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1", condition: "جديد" },
+>>>>>>> ec2d546d2a5083627fdca0db53a3fbb401014f03
       ]);
       queryClient.invalidateQueries({ queryKey: ["sales"] });
       queryClient.invalidateQueries({ queryKey: ["inventory"] });

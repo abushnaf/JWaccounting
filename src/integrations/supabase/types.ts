@@ -50,6 +50,7 @@ export type Database = {
       inventory: {
         Row: {
           category: string
+          condition: string
           created_at: string | null
           id: string
           karat: string
@@ -62,6 +63,7 @@ export type Database = {
         }
         Insert: {
           category?: string
+          condition?: string
           created_at?: string | null
           id?: string
           karat: string
@@ -74,6 +76,7 @@ export type Database = {
         }
         Update: {
           category?: string
+          condition?: string
           created_at?: string | null
           id?: string
           karat?: string
@@ -111,6 +114,7 @@ export type Database = {
         Row: {
           amount: number
           category: string | null
+          condition: string
           created_at: string | null
           id: string
           inventory_item_id: string | null
@@ -123,6 +127,7 @@ export type Database = {
         Insert: {
           amount: number
           category?: string | null
+          condition?: string
           created_at?: string | null
           id?: string
           inventory_item_id?: string | null
@@ -135,6 +140,7 @@ export type Database = {
         Update: {
           amount?: number
           category?: string | null
+          condition?: string
           created_at?: string | null
           id?: string
           inventory_item_id?: string | null
@@ -225,6 +231,7 @@ export type Database = {
         Row: {
           amount: number
           category: string | null
+          condition: string
           created_at: string | null
           id: string
           inventory_item_id: string | null
@@ -237,6 +244,7 @@ export type Database = {
         Insert: {
           amount: number
           category?: string | null
+          condition?: string
           created_at?: string | null
           id?: string
           inventory_item_id?: string | null
@@ -249,6 +257,7 @@ export type Database = {
         Update: {
           amount?: number
           category?: string | null
+          condition?: string
           created_at?: string | null
           id?: string
           inventory_item_id?: string | null

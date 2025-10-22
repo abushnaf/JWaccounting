@@ -29,7 +29,10 @@ interface PurchaseItem {
   weight: string;
   price_per_gram: string;
   quantity: string;
+  condition: string;
 }
+
+const conditionTypes = ["جديد", "مستعمل", "إعادة تصنيع"];
 
 export default function PurchaseFormNew() {
   const [open, setOpen] = useState(false);
@@ -43,7 +46,11 @@ export default function PurchaseFormNew() {
   });
 
   const [items, setItems] = useState<PurchaseItem[]>([
+<<<<<<< HEAD
     { inventory_item_id: "", item_name: "", category: "", condition: "New", weight: "", price_per_gram: "", quantity: "1" },
+=======
+ //   { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1", condition: "جديد" },
+>>>>>>> ec2d546d2a5083627fdca0db53a3fbb401014f03
   ]);
 
   const { data: inventory = [] } = useQuery({
@@ -61,7 +68,7 @@ export default function PurchaseFormNew() {
   const addItem = () => {
     setItems([
       ...items,
-      { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1" },
+      { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1", condition: "جديد" },
     ]);
   };
 
@@ -137,6 +144,7 @@ export default function PurchaseFormNew() {
         price_per_gram: parseFloat(item.price_per_gram),
         quantity: parseInt(item.quantity),
         amount: parseFloat(item.weight) * parseFloat(item.price_per_gram) * parseInt(item.quantity),
+        condition: item.condition,
       }));
 
       const { error: itemsError } = await supabase
@@ -153,7 +161,11 @@ export default function PurchaseFormNew() {
         description: "",
       });
       setItems([
+<<<<<<< HEAD
         { inventory_item_id: "", item_name: "", category: "", condition: "New", weight: "", price_per_gram: "", quantity: "1" },
+=======
+        { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1", condition: "جديد" },
+>>>>>>> ec2d546d2a5083627fdca0db53a3fbb401014f03
       ]);
       queryClient.invalidateQueries({ queryKey: ["purchases"] });
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
@@ -235,6 +247,7 @@ export default function PurchaseFormNew() {
                 key={index}
                 className="grid grid-cols-2 sm:grid-cols-12 gap-2 items-end p-3 border rounded-lg bg-muted/30"
               >
+<<<<<<< HEAD
                 <div className="col-span-3 space-y-1">
                   <Label className="text-xs">الصنف</Label>
                   <Select
@@ -252,6 +265,16 @@ export default function PurchaseFormNew() {
                       ))}
                     </SelectContent>
                   </Select>
+=======
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-xs">اسم الصنف</Label>
+                  <Input
+                    className="h-9"
+                    value={item.item_name}
+                    onChange={(e) => updateItem(index, "item_name", e.target.value)}
+                    placeholder="أدخل اسم الصنف"
+                  />
+>>>>>>> ec2d546d2a5083627fdca0db53a3fbb401014f03
                 </div>
 
                 <div className="col-span-2 space-y-1">
@@ -274,6 +297,25 @@ export default function PurchaseFormNew() {
                   />
                 </div>
 
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-xs">الحالة</Label>
+                  <Select
+                    value={item.condition}
+                    onValueChange={(value) => updateItem(index, "condition", value)}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {conditionTypes.map((condition) => (
+                        <SelectItem key={condition} value={condition}>
+                          {condition}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="col-span-1 space-y-1">
                   <Label className="text-xs">الكمية</Label>
                   <Input
@@ -285,7 +327,7 @@ export default function PurchaseFormNew() {
                   />
                 </div>
 
-                <div className="col-span-2 space-y-1">
+                <div className="col-span-1 space-y-1">
                   <Label className="text-xs">الوزن (جم)</Label>
                   <Input
                     type="number"

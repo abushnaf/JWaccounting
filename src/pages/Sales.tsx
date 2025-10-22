@@ -127,38 +127,38 @@ export default function Sales() {
           ) : (
             <div className="border rounded-lg overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full min-w-[500px]">
                   <thead className="bg-muted/50">
                     <tr>
-                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">التاريخ</th>
-                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">الوصف</th>
-                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">المبلغ الإجمالي</th>
-                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">طريقة الدفع</th>
-                      <th className="text-right p-2 md:p-3 text-xs md:text-sm font-medium">الإجراءات</th>
+                      <th className="text-right p-1.5 md:p-3 text-[10px] md:text-sm font-medium">التاريخ</th>
+                      <th className="text-right p-1.5 md:p-3 text-[10px] md:text-sm font-medium">الوصف</th>
+                      <th className="text-right p-1.5 md:p-3 text-[10px] md:text-sm font-medium">المبلغ الإجمالي</th>
+                      <th className="text-right p-1.5 md:p-3 text-[10px] md:text-sm font-medium">طريقة الدفع</th>
+                      <th className="text-right p-1.5 md:p-3 text-[10px] md:text-sm font-medium">الإجراءات</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     {sales.map((sale) => (
                       <tr key={sale.id} className="hover:bg-muted/30 transition-smooth">
-                        <td className="p-2 md:p-3 text-xs md:text-sm text-muted-foreground">
+                        <td className="p-1.5 md:p-3 text-[10px] md:text-sm text-muted-foreground whitespace-nowrap">
                           {new Date(sale.date).toLocaleDateString('ar-LY')}
                         </td>
-                        <td className="p-2 md:p-3 text-xs md:text-sm">{sale.description}</td>
-                        <td className="p-2 md:p-3 text-sm md:text-base font-bold text-secondary">
+                        <td className="p-1.5 md:p-3 text-[10px] md:text-sm">{sale.description}</td>
+                        <td className="p-1.5 md:p-3 text-xs md:text-base font-bold text-secondary whitespace-nowrap">
                           {Number(sale.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })} د.ل
                         </td>
-                        <td className="p-2 md:p-3">
-                          <Badge variant="outline" className="text-xs">{sale.payment_method}</Badge>
+                        <td className="p-1.5 md:p-3">
+                          <Badge variant="outline" className="text-[9px] md:text-xs">{sale.payment_method}</Badge>
                         </td>
-                        <td className="p-2 md:p-3">
+                        <td className="p-1.5 md:p-3">
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => setSelectedSale(sale.id)}
-                            className="h-8"
+                            className="h-7 md:h-8 text-[10px] md:text-sm px-2 md:px-3"
                           >
-                            <Eye className="w-4 h-4 ml-2" />
-                            عرض
+                            <Eye className="w-3 h-3 md:w-4 md:h-4 ml-1 md:ml-2" />
+                            <span className="hidden sm:inline">عرض</span>
                           </Button>
                         </td>
                       </tr>

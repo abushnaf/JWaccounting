@@ -22,8 +22,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const categoryTypes = ["ذهب", "فضة", "ماس", "أحجار كريمة"];
-const conditionTypes = ["New", "Used", "Broken"];
+// const conditionTypes = ["New", "Used", "Broken"];
 const karatTypes = ["24K", "21K", "18K", "14K", "فضة"];
+const conditionTypes = ["جديد", "مستعمل", "إعادة تصنيع"];
 
 export default function InventoryForm() {
   const [open, setOpen] = useState(false);
@@ -37,7 +38,8 @@ export default function InventoryForm() {
     weight: "",
     price_per_gram: "",
     stock: "1",
-    condition: "New",
+    condition: "جديد",
+   // condition: "New",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,6 +56,7 @@ export default function InventoryForm() {
         stock: parseInt(formData.stock),
         condition: formData.condition,
         status: parseInt(formData.stock) > 5 ? "متوفر" : "منخفض",
+      //  condition: formData.condition,
       });
 
       if (error) throw error;
@@ -67,7 +70,8 @@ export default function InventoryForm() {
         weight: "",
         price_per_gram: "",
         stock: "1",
-        condition: "New",
+        condition: "جديد",
+      //  condition: "New",
       });
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
     } catch (error) {
@@ -193,6 +197,25 @@ export default function InventoryForm() {
               value={formData.stock}
               onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="condition">الحالة</Label>
+            <Select
+              value={formData.condition}
+              onValueChange={(value) => setFormData({ ...formData, condition: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {conditionTypes.map((condition) => (
+                  <SelectItem key={condition} value={condition}>
+                    {condition}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Total Display */}
