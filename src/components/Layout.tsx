@@ -10,8 +10,7 @@ import {
   Settings,
   Users,
   UserCircle,
-  LogOut,
-  DollarSign
+  LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +25,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStore } from "@/contexts/StoreContext";
 import { usePermissions } from "@/hooks/usePermissions";
 
 const mainTabs = [
@@ -38,8 +38,6 @@ const mainTabs = [
 
 const profileMenuItems = [
   { id: "accounting", label: "المحاسبة", icon: Receipt, path: "/accounting", permission: "accounting:read" },
-  { id: "customers", label: "العملاء", icon: Users, path: "/customers", permission: "customers:read" },
-  { id: "suppliers", label: "الموردين", icon: UserCircle, path: "/suppliers", permission: "suppliers:read" },
   { id: "settings", label: "الإعدادات", icon: Settings, path: "/settings", permission: "settings:read" },
 ];
 
@@ -58,14 +56,9 @@ const roleColors = {
 export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [currency, setCurrency] = useState<"LYD" | "USD">("LYD");
-  // Temporarily disable auth checks
-  const { user, profile, signOut } = { user: null, profile: null, signOut: async () => {} };
-  const { hasPermission } = { hasPermission: () => true };
-
-  const toggleCurrency = () => {
-    setCurrency(prev => prev === "LYD" ? "USD" : "LYD");
-  };
+  const { user, profile, signOut } = useAuth();
+  const { settings } = useStore();
+  const { hasPermission } = usePermissions();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -75,11 +68,14 @@ export default function Layout() {
   };
 
   const getUserInitials = () => {
-    return 'U'; // Default initials when no user
+    if (profile?.full_name) {
+      return profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase();
+    }
+    return 'U';
   };
 
   const getUserDisplayName = () => {
-    return 'مستخدم'; // Default display name when no user
+    return profile?.full_name || 'مستخدم';
   };
 
   return (
@@ -93,23 +89,13 @@ export default function Layout() {
                 <span className="text-xl font-bold text-primary-foreground">💎</span>
               </div>
               <div className="hidden md:block">
-                <h1 className="text-lg font-bold text-primary">نظام المجوهرات</h1>
+                <h1 className="text-lg font-bold text-primary">{settings.app_name}</h1>
                 <p className="text-xs text-muted-foreground">إدارة متكاملة</p>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleCurrency}
-              className="gap-2"
-            >
-              <DollarSign className="w-4 h-4" />
-              {currency}
-            </Button>
-
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
@@ -124,9 +110,11 @@ export default function Layout() {
                 <DropdownMenuLabel className="flex flex-col items-start">
                   <span className="font-medium">{getUserDisplayName()}</span>
                   <div className="flex gap-1 mt-1">
-                    <Badge className="text-xs bg-gray-100 text-gray-800 border-gray-200">
-                      مستخدم تجريبي
-                    </Badge>
+                    {profile?.roles?.map((role) => (
+                      <Badge key={role} className={`text-xs ${roleColors[role]}`}>
+                        {roleLabels[role]}
+                      </Badge>
+                    ))}
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -160,28 +148,32 @@ export default function Layout() {
 
         {/* Navigation Tabs */}
         <div className="border-t bg-card/50 backdrop-blur-sm">
-          <nav className="flex overflow-x-auto px-4 md:px-6 scrollbar-hide">
-            {mainTabs
-              .filter(tab => hasPermission(tab.permission))
-              .map((tab) => {
-                const Icon = tab.icon;
-                const active = isActive(tab.path);
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => navigate(tab.path)}
-                    className={cn(
-                      "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-smooth whitespace-nowrap",
-                      active
-                        ? "border-secondary text-primary"
-                        : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted"
-                    )}
-                  >
-                    <Icon className={cn("w-4 h-4", active && "text-secondary")} />
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
+          <nav className="flex overflow-x-auto px-2 md:px-6 scrollbar-hide">
+            <div className="flex gap-1 min-w-max">
+              {mainTabs
+                .filter(tab => hasPermission(tab.permission))
+                .map((tab) => {
+                  const Icon = tab.icon;
+                  const active = isActive(tab.path);
+                  return (
+                    <Button
+                      key={tab.id}
+                      variant={active ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => navigate(tab.path)}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 min-w-fit",
+                        active
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      )}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span className="text-sm font-medium whitespace-nowrap">{tab.label}</span>
+                    </Button>
+                  );
+                })}
+            </div>
           </nav>
         </div>
       </header>

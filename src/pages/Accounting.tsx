@@ -2,11 +2,18 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Receipt, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Accounting() {
+  const { isDemo } = useAuth();
+
   const { data: sales = [] } = useQuery({
     queryKey: ["sales"],
     queryFn: async () => {
+      if (isDemo) {
+        const stored = localStorage.getItem('sales');
+        return stored ? JSON.parse(stored) : [];
+      }
       const { data, error } = await supabase
         .from("sales")
         .select("*")
@@ -19,6 +26,10 @@ export default function Accounting() {
   const { data: purchases = [] } = useQuery({
     queryKey: ["purchases"],
     queryFn: async () => {
+      if (isDemo) {
+        const stored = localStorage.getItem('purchases');
+        return stored ? JSON.parse(stored) : [];
+      }
       const { data, error } = await supabase
         .from("purchases")
         .select("*")
@@ -31,6 +42,10 @@ export default function Accounting() {
   const { data: expenses = [] } = useQuery({
     queryKey: ["expenses"],
     queryFn: async () => {
+      if (isDemo) {
+        const stored = localStorage.getItem('expenses');
+        return stored ? JSON.parse(stored) : [];
+      }
       const { data, error } = await supabase
         .from("expenses")
         .select("*")

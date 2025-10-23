@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Receipt, TrendingUp, Zap } from "lucide-react";
@@ -6,9 +8,15 @@ import ExpenseForm from "@/components/forms/ExpenseForm";
 import { Badge } from "@/components/ui/badge";
 
 export default function Expenses() {
+  const { isDemo } = useAuth();
   const { data: expenses = [], isLoading } = useQuery({
     queryKey: ["expenses"],
     queryFn: async () => {
+      if (isDemo) {
+        const stored = localStorage.getItem('expenses');
+        const list = stored ? JSON.parse(stored) : [];
+        return list.sort((a: any, b: any) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+      }
       const { data, error } = await supabase
         .from("expenses")
         .select("*")
@@ -33,6 +41,14 @@ export default function Expenses() {
   }, {} as Record<string, number>);
 
   const largestCategory = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0];
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const totalRows = expenses.length;
+  const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const start = (currentPage - 1) * pageSize;
+  const paginatedExpenses = expenses.slice(start, start + pageSize);
 
   return (
     <div className="space-y-6">
@@ -124,7 +140,7 @@ export default function Expenses() {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {expenses.map((expense) => (
+                    {paginatedExpenses.map((expense) => (
                       <tr key={expense.id} className="hover:bg-muted/30 transition-colors">
                         <td className="p-3 text-muted-foreground">
                           {new Date(expense.date).toLocaleDateString('ar-LY')}
@@ -143,6 +159,43 @@ export default function Expenses() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+              {/* Pagination */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 border-t bg-muted/30">
+                <div className="text-xs text-muted-foreground">
+                  عرض {Math.min(totalRows, start + 1)}-
+                  {Math.min(totalRows, start + paginatedExpenses.length)} من {totalRows}
+                </div>
+                <div className="flex items-center gap-2">
+                  <select
+                    className="h-8 rounded-md border bg-background px-2 text-xs"
+                    value={pageSize}
+                    onChange={(e) => { setPageSize(parseInt(e.target.value)); setPage(1); }}
+                  >
+                    {[10, 20, 50].map(s => (
+                      <option key={s} value={s}>{s} / صفحة</option>
+                    ))}
+                  </select>
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="h-8 px-2 rounded-md border text-xs disabled:opacity-50"
+                      disabled={currentPage === 1}
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
+                    >
+                      السابق
+                    </button>
+                    <span className="text-xs text-muted-foreground">
+                      {currentPage} / {totalPages}
+                    </span>
+                    <button
+                      className="h-8 px-2 rounded-md border text-xs disabled:opacity-50"
+                      disabled={currentPage === totalPages}
+                      onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    >
+                      التالي
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}

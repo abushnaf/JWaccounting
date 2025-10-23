@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, X } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SaleItem {
   inventory_item_id: string;
@@ -29,13 +30,13 @@ interface SaleItem {
   weight: string;
   price_per_gram: string;
   quantity: string;
- // condition: string;
   available_stock?: number;
 }
 
 const conditionTypes = ["جديد", "مستعمل", "إعادة تصنيع"];
 
 export default function SaleFormNew() {
+  const { isDemo } = useAuth();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
@@ -44,19 +45,20 @@ export default function SaleFormNew() {
     date: new Date().toISOString().split("T")[0],
     payment_method: "نقدي",
     description: "",
+    customer_name: "",
   });
 
   const [items, setItems] = useState<SaleItem[]>([
-<<<<<<< HEAD
-    { inventory_item_id: "", item_name: "", category: "", condition: "", weight: "", price_per_gram: "", quantity: "1" },
-=======
- //   { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1", condition: "جديد" },
->>>>>>> ec2d546d2a5083627fdca0db53a3fbb401014f03
+    { inventory_item_id: "", item_name: "", category: "", condition: "جديد", weight: "", price_per_gram: "", quantity: "1" },
   ]);
 
   const { data: inventory = [] } = useQuery({
     queryKey: ["inventory"],
     queryFn: async () => {
+      if (isDemo) {
+        const stored = localStorage.getItem('inventory');
+        return stored ? JSON.parse(stored) : [];
+      }
       const { data, error } = await supabase
         .from("inventory")
         .select("*")
@@ -65,6 +67,7 @@ export default function SaleFormNew() {
       return data;
     },
   });
+
 
   const addItem = () => {
     setItems([
@@ -147,6 +150,57 @@ export default function SaleFormNew() {
       }
       const totalAmount = calculateTotal();
 
+      if (isDemo) {
+        // Save to localStorage in demo mode
+        const saleId = Date.now().toString();
+        const sale = {
+          id: saleId,
+          date: formData.date,
+          amount: totalAmount,
+          description: formData.description || "فاتورة بيع",
+          payment_method: formData.payment_method,
+          created_at: new Date().toISOString()
+        };
+
+        // Save sale
+        const storedSales = localStorage.getItem('sales');
+        const sales = storedSales ? JSON.parse(storedSales) : [];
+        localStorage.setItem('sales', JSON.stringify([...sales, sale]));
+
+        // Save sale items
+        const saleItems = validItems.map((item) => ({
+          id: Date.now().toString() + Math.random(),
+          sale_id: saleId,
+          inventory_item_id: item.inventory_item_id || null,
+          item_name: item.item_name,
+          category: item.category,
+          condition: item.condition,
+          weight: parseFloat(item.weight),
+          price_per_gram: parseFloat(item.price_per_gram),
+          quantity: parseInt(item.quantity),
+          amount: parseFloat(item.weight) * parseFloat(item.price_per_gram) * parseInt(item.quantity),
+          created_at: new Date().toISOString()
+        }));
+
+        const storedSaleItems = localStorage.getItem('sales_items');
+        const allSaleItems = storedSaleItems ? JSON.parse(storedSaleItems) : [];
+        localStorage.setItem('sales_items', JSON.stringify([...allSaleItems, ...saleItems]));
+
+        toast.success("تمت إضافة الفاتورة بنجاح");
+        setOpen(false);
+        setFormData({
+          date: new Date().toISOString().split("T")[0],
+          payment_method: "نقدي",
+          description: "",
+          customer_name: "",
+        });
+        setItems([
+          { inventory_item_id: "", item_name: "", category: "", condition: "جديد", weight: "", price_per_gram: "", quantity: "1" },
+        ]);
+        queryClient.invalidateQueries({ queryKey: ["sales"] });
+        return;
+      }
+
       // Insert sale
       const { data: sale, error: saleError } = await supabase
         .from("sales")
@@ -167,12 +221,11 @@ export default function SaleFormNew() {
         inventory_item_id: item.inventory_item_id || null,
         item_name: item.item_name,
         category: item.category,
-        condition: item.condition || null,
+        condition: item.condition,
         weight: parseFloat(item.weight),
         price_per_gram: parseFloat(item.price_per_gram),
         quantity: parseInt(item.quantity),
         amount: parseFloat(item.weight) * parseFloat(item.price_per_gram) * parseInt(item.quantity),
-        condition: item.condition,
       }));
 
       const { error: itemsError } = await supabase
@@ -187,13 +240,10 @@ export default function SaleFormNew() {
         date: new Date().toISOString().split("T")[0],
         payment_method: "نقدي",
         description: "",
+        customer_name: "",
       });
       setItems([
-<<<<<<< HEAD
-        { inventory_item_id: "", item_name: "", category: "", condition: "", weight: "", price_per_gram: "", quantity: "1" },
-=======
-   //     { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1", condition: "جديد" },
->>>>>>> ec2d546d2a5083627fdca0db53a3fbb401014f03
+        { inventory_item_id: "", item_name: "", category: "", condition: "جديد", weight: "", price_per_gram: "", quantity: "1" },
       ]);
       queryClient.invalidateQueries({ queryKey: ["sales"] });
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
@@ -218,7 +268,7 @@ export default function SaleFormNew() {
           <DialogTitle>فاتورة بيع جديدة</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="date">التاريخ</Label>
               <Input
@@ -227,6 +277,18 @@ export default function SaleFormNew() {
                 required
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="customer_name">اسم العميل</Label>
+              <Input
+                id="customer_name"
+                value={formData.customer_name}
+                onChange={(e) =>
+                  setFormData({ ...formData, customer_name: e.target.value })
+                }
+                placeholder="أدخل اسم العميل"
               />
             </div>
 
@@ -273,17 +335,17 @@ export default function SaleFormNew() {
             {items.map((item, index) => (
               <div
                 key={index}
-                className="grid grid-cols-2 sm:grid-cols-12 gap-2 items-end p-3 border rounded-lg bg-muted/30"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 items-end p-4 border rounded-lg bg-muted/30"
               >
-                <div className="col-span-3 space-y-1">
-                  <Label className="text-xs">الصنف</Label>
+                <div className="col-span-1 sm:col-span-2 space-y-2">
+                  <Label className="text-sm font-medium">الصنف</Label>
                   <Select
                     value={item.inventory_item_id}
                     onValueChange={(value) =>
                       updateItem(index, "inventory_item_id", value)
                     }
                   >
-                    <SelectTrigger className="h-9">
+                    <SelectTrigger className="h-11">
                       <SelectValue placeholder="اختر من المخزون" />
                     </SelectTrigger>
                     <SelectContent>
@@ -296,54 +358,54 @@ export default function SaleFormNew() {
                   </Select>
                 </div>
 
-                <div className="col-span-2 space-y-1">
-                  <Label className="text-xs">الفئة</Label>
+                <div className="col-span-1 space-y-2">
+                  <Label className="text-sm font-medium">الفئة</Label>
                   <Input
-                    className="h-9"
+                    className="h-11"
                     value={item.category}
                     readOnly
                     placeholder="تلقائي"
                   />
                 </div>
 
-                <div className="col-span-2 space-y-1">
-                  <Label className="text-xs">الحالة</Label>
+                <div className="col-span-1 space-y-2">
+                  <Label className="text-sm font-medium">الحالة</Label>
                   <Input
-                    className="h-9"
+                    className="h-11"
                     value={item.condition || ''}
                     readOnly
                     placeholder="تلقائي"
                   />
                 </div>
 
-                <div className="col-span-2 space-y-1">
-                  <Label className="text-xs">الكمية</Label>
+                <div className="col-span-1 space-y-2">
+                  <Label className="text-sm font-medium">الكمية</Label>
                   <Input
                     type="number"
                     min="1"
-                    className="h-9"
+                    className="h-11"
                     value={item.quantity}
                     onChange={(e) => updateItem(index, "quantity", e.target.value)}
                   />
                 </div>
 
-                <div className="col-span-1 space-y-1">
-                  <Label className="text-xs">الوزن (جم)</Label>
+                <div className="col-span-1 space-y-2">
+                  <Label className="text-sm font-medium">الوزن (جم)</Label>
                   <Input
                     type="number"
                     step="0.01"
-                    className="h-9"
+                    className="h-11"
                     value={item.weight}
                     onChange={(e) => updateItem(index, "weight", e.target.value)}
                   />
                 </div>
 
-                <div className="col-span-2 space-y-1">
-                  <Label className="text-xs">سعر الجرام</Label>
+                <div className="col-span-1 space-y-2">
+                  <Label className="text-sm font-medium">سعر الجرام</Label>
                   <Input
                     type="number"
                     step="0.01"
-                    className="h-9"
+                    className="h-11"
                     value={item.price_per_gram}
                     onChange={(e) =>
                       updateItem(index, "price_per_gram", e.target.value)
@@ -351,7 +413,7 @@ export default function SaleFormNew() {
                   />
                 </div>
 
-                <div className="col-span-2 flex items-center justify-between">
+                <div className="col-span-1 flex items-center justify-between">
                   <div className="text-sm font-semibold">
                     {(
                       (parseFloat(item.weight) || 0) *

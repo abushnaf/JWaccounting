@@ -5,14 +5,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, PieChart, TrendingUp, Download, DollarSign, Package, ShoppingCart, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Cell, LineChart, Line, Pie } from 'recharts';
 
 export default function Reports() {
+  const { isDemo } = useAuth();
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
 
   // Fetch sales data
   const { data: sales = [] } = useQuery({
     queryKey: ["sales"],
     queryFn: async () => {
+      if (isDemo) {
+        const stored = localStorage.getItem('sales');
+        return stored ? JSON.parse(stored) : [];
+      }
       const { data, error } = await supabase
         .from("sales")
         .select("*")
@@ -26,6 +33,10 @@ export default function Reports() {
   const { data: purchases = [] } = useQuery({
     queryKey: ["purchases"],
     queryFn: async () => {
+      if (isDemo) {
+        const stored = localStorage.getItem('purchases');
+        return stored ? JSON.parse(stored) : [];
+      }
       const { data, error } = await supabase
         .from("purchases")
         .select("*")
@@ -39,6 +50,10 @@ export default function Reports() {
   const { data: inventory = [] } = useQuery({
     queryKey: ["inventory"],
     queryFn: async () => {
+      if (isDemo) {
+        const stored = localStorage.getItem('inventory');
+        return stored ? JSON.parse(stored) : [];
+      }
       const { data, error } = await supabase
         .from("inventory")
         .select("*");
@@ -132,6 +147,52 @@ export default function Reports() {
 
   const currentStats = getReportStats();
 
+  // Chart data preparation
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+
+  // Sales vs Purchases Chart Data
+  const salesVsPurchasesData = [
+    { name: 'المبيعات', amount: totalSales, color: '#0088FE' },
+    { name: 'المشتريات', amount: totalPurchases, color: '#00C49F' },
+  ];
+
+  // Monthly Sales Trend (last 6 months)
+  const monthlySalesData = Array.from({ length: 6 }, (_, i) => {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const monthSales = sales.filter(sale => {
+      const saleDate = new Date(sale.date);
+      return saleDate.getMonth() === date.getMonth() && saleDate.getFullYear() === date.getFullYear();
+    }).reduce((sum, sale) => sum + Number(sale.amount), 0);
+    
+    return {
+      month: date.toLocaleDateString('ar-SA', { month: 'short' }),
+      sales: monthSales,
+      purchases: purchases.filter(purchase => {
+        const purchaseDate = new Date(purchase.date);
+        return purchaseDate.getMonth() === date.getMonth() && purchaseDate.getFullYear() === date.getFullYear();
+      }).reduce((sum, purchase) => sum + Number(purchase.amount), 0)
+    };
+  }).reverse();
+
+  // Inventory Categories Pie Chart
+  const inventoryCategoriesData = inventory.reduce((acc, item) => {
+    const category = item.category || 'غير محدد';
+    const existing = acc.find(c => c.name === category);
+    if (existing) {
+      existing.value += 1;
+    } else {
+      acc.push({ name: category, value: 1 });
+    }
+    return acc;
+  }, [] as { name: string; value: number }[]);
+
+  // Profit Trend Chart
+  const profitTrendData = monthlySalesData.map(month => ({
+    month: month.month,
+    profit: month.sales - month.purchases
+  }));
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -140,6 +201,104 @@ export default function Reports() {
           <Download className="w-4 h-4" />
           تصدير Excel
         </Button>
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Sales vs Purchases Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              المبيعات مقابل المشتريات
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={salesVsPurchasesData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip formatter={(value) => [`${Number(value).toLocaleString()} د.ل`, 'المبلغ']} />
+                <Bar dataKey="amount" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Monthly Trend Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              الاتجاه الشهري
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={monthlySalesData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip formatter={(value) => [`${Number(value).toLocaleString()} د.ل`, 'المبلغ']} />
+                <Line type="monotone" dataKey="sales" stroke="#0088FE" strokeWidth={2} name="المبيعات" />
+                <Line type="monotone" dataKey="purchases" stroke="#00C49F" strokeWidth={2} name="المشتريات" />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Inventory Categories Pie Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <PieChart className="w-5 h-5" />
+              توزيع المخزون حسب الفئة
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <RechartsPieChart>
+                <Pie
+                  data={inventoryCategoriesData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {inventoryCategoriesData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </RechartsPieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Profit Trend Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="w-5 h-5" />
+              اتجاه الأرباح
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={profitTrendData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip formatter={(value) => [`${Number(value).toLocaleString()} د.ل`, 'الربح']} />
+                <Line type="monotone" dataKey="profit" stroke="#FF8042" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -257,7 +416,7 @@ export default function Reports() {
         <CardContent>
           {currentStats ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {renderReportSummary(selectedReport!, currentStats)}
+              {renderReportSummary(selectedReport!, currentStats, inventory)}
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -328,7 +487,7 @@ function getReportTitle(reportType: string): string {
   }
 }
 
-function renderReportSummary(reportType: string, stats: any) {
+function renderReportSummary(reportType: string, stats: any, inventory: any[] = []) {
   switch (reportType) {
     case 'sales':
       return (

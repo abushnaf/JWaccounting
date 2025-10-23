@@ -17,11 +17,6 @@ export default function ProtectedRoute({
   requiredRole,
   fallbackPath = "/" 
 }: ProtectedRouteProps) {
-  // Temporarily disable authentication checks to allow access
-  return <>{children}</>;
-
-  // Original authentication code (commented out for now):
-  /*
   const { user, loading } = useAuth();
   const { hasPermission, hasRole } = usePermissions();
   const location = useLocation();
@@ -89,7 +84,6 @@ export default function ProtectedRoute({
   }
 
   return <>{children}</>;
-  */
 }
 
 // Higher-order component for protecting routes

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,14 +6,22 @@ import { ShoppingCart, DollarSign, TrendingUp, Eye } from "lucide-react";
 import SaleFormNew from "@/components/forms/SaleFormNew";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import InvoiceDetailDialog from "@/components/InvoiceDetailDialog";
 
 export default function Sales() {
+  const { isDemo } = useAuth();
   const [selectedSale, setSelectedSale] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   
   const { data: sales = [], isLoading } = useQuery({
     queryKey: ["sales"],
     queryFn: async () => {
+      if (isDemo) {
+        const stored = localStorage.getItem('sales');
+        return stored ? JSON.parse(stored) : [];
+      }
       const { data, error } = await supabase
         .from("sales")
         .select("*")
@@ -28,6 +36,11 @@ export default function Sales() {
     queryKey: ["sale_items", selectedSale],
     queryFn: async () => {
       if (!selectedSale) return [];
+      if (isDemo) {
+        const stored = localStorage.getItem('sales_items');
+        const allItems = stored ? JSON.parse(stored) : [];
+        return allItems.filter((item: any) => item.sale_id === selectedSale);
+      }
       const { data, error } = await supabase
         .from("sales_items")
         .select("*")
@@ -47,6 +60,12 @@ export default function Sales() {
   const todayTotal = todaySales.reduce((sum, sale) => sum + Number(sale.amount), 0);
   const monthTotal = sales.reduce((sum, sale) => sum + Number(sale.amount), 0);
   const averageInvoice = sales.length > 0 ? monthTotal / sales.length : 0;
+
+  const totalRows = sales.length;
+  const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const start = (currentPage - 1) * pageSize;
+  const paginatedSales = sales.slice(start, start + pageSize);
 
   return (
     <div className="space-y-6">
@@ -132,18 +151,22 @@ export default function Sales() {
                     <tr>
                       <th className="text-right p-1.5 md:p-3 text-[10px] md:text-sm font-medium">التاريخ</th>
                       <th className="text-right p-1.5 md:p-3 text-[10px] md:text-sm font-medium">الوصف</th>
+                      <th className="text-right p-1.5 md:p-3 text-[10px] md:text-sm font-medium">الأصناف</th>
                       <th className="text-right p-1.5 md:p-3 text-[10px] md:text-sm font-medium">المبلغ الإجمالي</th>
                       <th className="text-right p-1.5 md:p-3 text-[10px] md:text-sm font-medium">طريقة الدفع</th>
                       <th className="text-right p-1.5 md:p-3 text-[10px] md:text-sm font-medium">الإجراءات</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {sales.map((sale) => (
+                    {paginatedSales.map((sale) => (
                       <tr key={sale.id} className="hover:bg-muted/30 transition-smooth">
                         <td className="p-1.5 md:p-3 text-[10px] md:text-sm text-muted-foreground whitespace-nowrap">
                           {new Date(sale.date).toLocaleDateString('ar-LY')}
                         </td>
                         <td className="p-1.5 md:p-3 text-[10px] md:text-sm">{sale.description}</td>
+                        <td className="p-1.5 md:p-3 text-[10px] md:text-sm text-muted-foreground">
+                          <SaleItemNames saleId={sale.id} />
+                        </td>
                         <td className="p-1.5 md:p-3 text-xs md:text-base font-bold text-secondary whitespace-nowrap">
                           {Number(sale.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })} د.ل
                         </td>
@@ -166,6 +189,43 @@ export default function Sales() {
                   </tbody>
                 </table>
               </div>
+              {/* Pagination */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 border-t bg-muted/30">
+                <div className="text-xs text-muted-foreground">
+                  عرض {Math.min(totalRows, start + 1)}-
+                  {Math.min(totalRows, start + paginatedSales.length)} من {totalRows}
+                </div>
+                <div className="flex items-center gap-2">
+                  <select
+                    className="h-8 rounded-md border bg-background px-2 text-xs"
+                    value={pageSize}
+                    onChange={(e) => { setPageSize(parseInt(e.target.value)); setPage(1); }}
+                  >
+                    {[10, 20, 50].map(s => (
+                      <option key={s} value={s}>{s} / صفحة</option>
+                    ))}
+                  </select>
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="h-8 px-2 rounded-md border text-xs disabled:opacity-50"
+                      disabled={currentPage === 1}
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
+                    >
+                      السابق
+                    </button>
+                    <span className="text-xs text-muted-foreground">
+                      {currentPage} / {totalPages}
+                    </span>
+                    <button
+                      className="h-8 px-2 rounded-md border text-xs disabled:opacity-50"
+                      disabled={currentPage === totalPages}
+                      onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    >
+                      التالي
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>
@@ -179,5 +239,39 @@ export default function Sales() {
         type="sale"
       />
     </div>
+  );
+}
+
+// Component to display sale item names
+function SaleItemNames({ saleId }: { saleId: string }) {
+  const { isDemo } = useAuth();
+  const [itemNames, setItemNames] = useState<string>('');
+
+  useEffect(() => {
+    const fetchItemNames = async () => {
+      if (isDemo) {
+        const stored = localStorage.getItem('sales_items');
+        const allItems = stored ? JSON.parse(stored) : [];
+        const items = allItems.filter((item: any) => item.sale_id === saleId);
+        setItemNames(items.map((item: any) => item.item_name).join(', '));
+      } else {
+        const { data, error } = await supabase
+          .from("sales_items")
+          .select("item_name")
+          .eq("sale_id", saleId);
+        
+        if (!error && data) {
+          setItemNames(data.map(item => item.item_name).join(', '));
+        }
+      }
+    };
+
+    fetchItemNames();
+  }, [saleId, isDemo]);
+
+  return (
+    <span className="truncate max-w-[150px] block" title={itemNames}>
+      {itemNames || 'جاري التحميل...'}
+    </span>
   );
 }

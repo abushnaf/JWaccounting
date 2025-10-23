@@ -1,10 +1,10 @@
 import { useAuth } from '@/contexts/AuthContext';
 import type { Database } from '@/integrations/supabase/types';
 
-type AppRole = Database['public']['Enums']['app_role'];
+export type AppRole = Database['public']['Enums']['app_role'];
 
 // Define permissions for each role
-const ROLE_PERMISSIONS: Record<AppRole, string[]> = {
+export const ROLE_PERMISSIONS: Record<AppRole, string[]> = {
   admin: [
     'inventory:read',
     'inventory:write',

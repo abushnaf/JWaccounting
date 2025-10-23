@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,16 +26,16 @@ interface PurchaseItem {
   inventory_item_id: string;
   item_name: string;
   category: string;
-  condition?: string;
+  condition: string;
   weight: string;
   price_per_gram: string;
   quantity: string;
-  condition: string;
 }
 
 const conditionTypes = ["جديد", "مستعمل", "إعادة تصنيع"];
 
 export default function PurchaseFormNew() {
+  const { isDemo } = useAuth();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
@@ -43,21 +44,38 @@ export default function PurchaseFormNew() {
     date: new Date().toISOString().split("T")[0],
     payment_method: "نقدي",
     description: "",
+    supplier_id: "",
   });
 
   const [items, setItems] = useState<PurchaseItem[]>([
-<<<<<<< HEAD
-    { inventory_item_id: "", item_name: "", category: "", condition: "New", weight: "", price_per_gram: "", quantity: "1" },
-=======
- //   { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1", condition: "جديد" },
->>>>>>> ec2d546d2a5083627fdca0db53a3fbb401014f03
+    { inventory_item_id: "", item_name: "", category: "", condition: "جديد", weight: "", price_per_gram: "", quantity: "1" },
   ]);
 
   const { data: inventory = [] } = useQuery({
     queryKey: ["inventory"],
     queryFn: async () => {
+      if (isDemo) {
+        const stored = localStorage.getItem('inventory');
+        return stored ? JSON.parse(stored) : [];
+      }
       const { data, error } = await supabase
         .from("inventory")
+        .select("*")
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: suppliers = [] } = useQuery({
+    queryKey: ["suppliers"],
+    queryFn: async () => {
+      if (isDemo) {
+        const stored = localStorage.getItem('suppliers');
+        return stored ? JSON.parse(stored) : [];
+      }
+      const { data, error } = await supabase
+        .from("suppliers" as any)
         .select("*")
         .order("name");
       if (error) throw error;
@@ -85,7 +103,7 @@ export default function PurchaseFormNew() {
       if (selectedItem) {
         newItems[index].item_name = selectedItem.name;
         newItems[index].category = selectedItem.category;
-        newItems[index].condition = selectedItem.condition || 'New';
+        newItems[index].condition = selectedItem.condition || 'جديد';
         newItems[index].price_per_gram = selectedItem.price_per_gram.toString();
       }
     }
@@ -139,12 +157,11 @@ export default function PurchaseFormNew() {
         inventory_item_id: item.inventory_item_id || null,
         item_name: item.item_name,
         category: item.category,
-        condition: item.condition || 'New',
+        condition: item.condition,
         weight: parseFloat(item.weight),
         price_per_gram: parseFloat(item.price_per_gram),
         quantity: parseInt(item.quantity),
         amount: parseFloat(item.weight) * parseFloat(item.price_per_gram) * parseInt(item.quantity),
-        condition: item.condition,
       }));
 
       const { error: itemsError } = await supabase
@@ -159,13 +176,10 @@ export default function PurchaseFormNew() {
         date: new Date().toISOString().split("T")[0],
         payment_method: "نقدي",
         description: "",
+        supplier_id: "",
       });
       setItems([
-<<<<<<< HEAD
-        { inventory_item_id: "", item_name: "", category: "", condition: "New", weight: "", price_per_gram: "", quantity: "1" },
-=======
-        { inventory_item_id: "", item_name: "", category: "", weight: "", price_per_gram: "", quantity: "1", condition: "جديد" },
->>>>>>> ec2d546d2a5083627fdca0db53a3fbb401014f03
+        { inventory_item_id: "", item_name: "", category: "", condition: "جديد", weight: "", price_per_gram: "", quantity: "1" },
       ]);
       queryClient.invalidateQueries({ queryKey: ["purchases"] });
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
@@ -190,7 +204,7 @@ export default function PurchaseFormNew() {
           <DialogTitle>طلب شراء جديد</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="date">التاريخ</Label>
               <Input
@@ -200,6 +214,27 @@ export default function PurchaseFormNew() {
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="supplier">المورد</Label>
+              <Select
+                value={formData.supplier_id}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, supplier_id: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="اختر المورد" />
+                </SelectTrigger>
+                <SelectContent>
+                  {suppliers.map((supplier) => (
+                    <SelectItem key={supplier.id} value={supplier.id}>
+                      {supplier.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -245,16 +280,15 @@ export default function PurchaseFormNew() {
             {items.map((item, index) => (
               <div
                 key={index}
-                className="grid grid-cols-2 sm:grid-cols-12 gap-2 items-end p-3 border rounded-lg bg-muted/30"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 items-end p-4 border rounded-lg bg-muted/30"
               >
-<<<<<<< HEAD
-                <div className="col-span-3 space-y-1">
-                  <Label className="text-xs">الصنف</Label>
+                <div className="col-span-1 sm:col-span-2 space-y-2">
+                  <Label className="text-sm font-medium">الصنف</Label>
                   <Select
                     value={item.inventory_item_id}
                     onValueChange={(value) => updateItem(index, "inventory_item_id", value)}
                   >
-                    <SelectTrigger className="h-9">
+                    <SelectTrigger className="h-11">
                       <SelectValue placeholder="اختر من المخزون" />
                     </SelectTrigger>
                     <SelectContent>
@@ -265,45 +299,25 @@ export default function PurchaseFormNew() {
                       ))}
                     </SelectContent>
                   </Select>
-=======
-                <div className="col-span-2 space-y-1">
-                  <Label className="text-xs">اسم الصنف</Label>
-                  <Input
-                    className="h-9"
-                    value={item.item_name}
-                    onChange={(e) => updateItem(index, "item_name", e.target.value)}
-                    placeholder="أدخل اسم الصنف"
-                  />
->>>>>>> ec2d546d2a5083627fdca0db53a3fbb401014f03
                 </div>
 
-                <div className="col-span-2 space-y-1">
-                  <Label className="text-xs">الفئة</Label>
+                <div className="col-span-1 space-y-2">
+                  <Label className="text-sm font-medium">الفئة</Label>
                   <Input
-                    className="h-9"
+                    className="h-11"
                     value={item.category}
                     readOnly
                     placeholder="تلقائي"
                   />
                 </div>
 
-                <div className="col-span-2 space-y-1">
-                  <Label className="text-xs">الحالة</Label>
-                  <Input
-                    className="h-9"
-                    value={item.condition || 'New'}
-                    readOnly
-                    placeholder="تلقائي"
-                  />
-                </div>
-
-                <div className="col-span-2 space-y-1">
-                  <Label className="text-xs">الحالة</Label>
+                <div className="col-span-1 space-y-2">
+                  <Label className="text-sm font-medium">الحالة</Label>
                   <Select
-                    value={item.condition}
+                    value={item.condition || "جديد"}
                     onValueChange={(value) => updateItem(index, "condition", value)}
                   >
-                    <SelectTrigger className="h-9">
+                    <SelectTrigger className="h-11">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -316,34 +330,34 @@ export default function PurchaseFormNew() {
                   </Select>
                 </div>
 
-                <div className="col-span-1 space-y-1">
-                  <Label className="text-xs">الكمية</Label>
+                <div className="col-span-1 space-y-2">
+                  <Label className="text-sm font-medium">الكمية</Label>
                   <Input
                     type="number"
                     min="1"
-                    className="h-9"
+                    className="h-11"
                     value={item.quantity}
                     onChange={(e) => updateItem(index, "quantity", e.target.value)}
                   />
                 </div>
 
-                <div className="col-span-1 space-y-1">
-                  <Label className="text-xs">الوزن (جم)</Label>
+                <div className="col-span-1 space-y-2">
+                  <Label className="text-sm font-medium">الوزن (جم)</Label>
                   <Input
                     type="number"
                     step="0.01"
-                    className="h-9"
+                    className="h-11"
                     value={item.weight}
                     onChange={(e) => updateItem(index, "weight", e.target.value)}
                   />
                 </div>
 
-                <div className="col-span-2 space-y-1">
-                  <Label className="text-xs">سعر الجرام</Label>
+                <div className="col-span-1 space-y-2">
+                  <Label className="text-sm font-medium">سعر الجرام</Label>
                   <Input
                     type="number"
                     step="0.01"
-                    className="h-9"
+                    className="h-11"
                     value={item.price_per_gram}
                     onChange={(e) =>
                       updateItem(index, "price_per_gram", e.target.value)
@@ -351,7 +365,7 @@ export default function PurchaseFormNew() {
                   />
                 </div>
 
-                <div className="col-span-2 flex items-center justify-between">
+                <div className="col-span-1 flex items-center justify-between">
                   <div className="text-sm font-semibold">
                     {(
                       (parseFloat(item.weight) || 0) *

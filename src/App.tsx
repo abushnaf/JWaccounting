@@ -4,8 +4,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { StoreProvider } from "@/contexts/StoreContext";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminSetup from "./components/AdminSetup";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Inventory from "./pages/Inventory";
@@ -14,8 +16,8 @@ import Purchases from "./pages/Purchases";
 import Expenses from "./pages/Expenses";
 import Reports from "./pages/Reports";
 import Accounting from "./pages/Accounting";
-import Customers from "./pages/Customers";
-import Suppliers from "./pages/Suppliers";
+// import Customers from "./pages/Customers";
+// import Suppliers from "./pages/Suppliers";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -24,11 +26,13 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+      <StoreProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
           <Routes>
+            <Route path="/admin-setup" element={<AdminSetup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route element={<Layout />}>
@@ -80,7 +84,7 @@ const App = () => (
                   </ProtectedRoute>
                 } 
               />
-              <Route 
+              {/* <Route 
                 path="/customers" 
                 element={
                   <ProtectedRoute requiredPermission="customers:read">
@@ -95,7 +99,7 @@ const App = () => (
                     <Suppliers />
                   </ProtectedRoute>
                 } 
-              />
+              /> */}
               <Route 
                 path="/settings" 
                 element={
@@ -109,6 +113,7 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
+      </StoreProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

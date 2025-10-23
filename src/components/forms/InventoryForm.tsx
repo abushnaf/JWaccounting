@@ -20,13 +20,14 @@ import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const categoryTypes = ["ذهب", "فضة", "ماس", "أحجار كريمة"];
-// const conditionTypes = ["New", "Used", "Broken"];
 const karatTypes = ["24K", "21K", "18K", "14K", "فضة"];
 const conditionTypes = ["جديد", "مستعمل", "إعادة تصنيع"];
 
 export default function InventoryForm() {
+  const { isDemo } = useAuth();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
@@ -39,7 +40,6 @@ export default function InventoryForm() {
     price_per_gram: "",
     stock: "1",
     condition: "جديد",
-   // condition: "New",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,19 +47,34 @@ export default function InventoryForm() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.from("inventory").insert({
-        name: formData.name,
-        category: formData.category,
-        karat: formData.karat,
-        weight: parseFloat(formData.weight),
-        price_per_gram: parseFloat(formData.price_per_gram),
-        stock: parseInt(formData.stock),
-        condition: formData.condition,
-        status: parseInt(formData.stock) > 5 ? "متوفر" : "منخفض",
-      //  condition: formData.condition,
-      });
+      if (isDemo) {
+        // Save to localStorage in demo mode
+        const stored = localStorage.getItem('inventory');
+        const inventory = stored ? JSON.parse(stored) : [];
+        const newItem = {
+          id: Date.now().toString(),
+          ...formData,
+          weight: parseFloat(formData.weight),
+          price_per_gram: parseFloat(formData.price_per_gram),
+          stock: parseInt(formData.stock),
+          status: parseInt(formData.stock) > 5 ? "متوفر" : "منخفض",
+          created_at: new Date().toISOString()
+        };
+        localStorage.setItem('inventory', JSON.stringify([...inventory, newItem]));
+      } else {
+        const { error } = await supabase.from("inventory").insert({
+          name: formData.name,
+          category: formData.category,
+          karat: formData.karat,
+          weight: parseFloat(formData.weight),
+          price_per_gram: parseFloat(formData.price_per_gram),
+          stock: parseInt(formData.stock),
+          condition: formData.condition,
+          status: parseInt(formData.stock) > 5 ? "متوفر" : "منخفض",
+        });
 
-      if (error) throw error;
+        if (error) throw error;
+      }
 
       toast.success("تمت إضافة القطعة بنجاح");
       setOpen(false);
@@ -71,7 +86,6 @@ export default function InventoryForm() {
         price_per_gram: "",
         stock: "1",
         condition: "جديد",
-      //  condition: "New",
       });
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
     } catch (error) {

@@ -21,8 +21,10 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ExpenseForm() {
+  const { isDemo } = useAuth();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
@@ -40,6 +42,35 @@ export default function ExpenseForm() {
     setLoading(true);
 
     try {
+      if (isDemo) {
+        // Save to localStorage in demo mode
+        const expense = {
+          id: Date.now().toString(),
+          date: formData.date,
+          amount: parseFloat(formData.amount),
+          description: formData.description,
+          payment_method: formData.payment_method,
+          category: formData.category,
+          created_at: new Date().toISOString()
+        };
+
+        const storedExpenses = localStorage.getItem('expenses');
+        const expenses = storedExpenses ? JSON.parse(storedExpenses) : [];
+        localStorage.setItem('expenses', JSON.stringify([...expenses, expense]));
+
+        toast.success("تم إضافة المصروف بنجاح");
+        queryClient.invalidateQueries({ queryKey: ["expenses"] });
+        setOpen(false);
+        setFormData({
+          date: new Date().toISOString().split('T')[0],
+          amount: "",
+          description: "",
+          payment_method: "نقدي",
+          category: "أخرى",
+        });
+        return;
+      }
+
       const { error } = await supabase.from("expenses").insert([
         {
           date: formData.date,

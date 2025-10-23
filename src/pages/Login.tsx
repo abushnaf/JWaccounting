@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 
@@ -14,18 +14,14 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { signIn } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
+      await signIn(email, password);
 
       toast.success('تم تسجيل الدخول بنجاح');
       navigate('/');
@@ -99,6 +95,12 @@ export default function Login() {
             لا تمتلك حسابًا؟
             <Button variant="link" className="px-1" type="button" onClick={() => navigate('/signup')}>
               إنشاء حساب
+            </Button>
+          </div>
+          
+          <div className="mt-2 text-sm text-center">
+            <Button variant="link" className="px-1" type="button" onClick={() => navigate('/admin-setup')}>
+              إعداد المدير الأول
             </Button>
           </div>
           

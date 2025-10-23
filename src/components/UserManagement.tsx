@@ -22,7 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { UserPlus, Shield, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { useRoleManagement } from "@/hooks/usePermissions";
+import { useRoleManagement, ROLE_PERMISSIONS } from "@/hooks/usePermissions";
 
 type AppRole = "admin" | "seller" | "accountant";
 
@@ -280,19 +280,29 @@ export default function UserManagement() {
                       <td className="p-2 md:p-3 text-xs md:text-sm text-muted-foreground">
                         {user.email}
                       </td>
-                      <td className="p-2 md:p-3">
-                        <div className="flex flex-wrap gap-1">
-                          {user.roles.map((role) => (
-                            <Badge
-                              key={role}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              {roleLabels[role as AppRole]}
-                            </Badge>
-                          ))}
-                        </div>
-                      </td>
+                  <td className="p-2 md:p-3">
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap gap-1">
+                        {user.roles.map((role) => (
+                          <Badge
+                            key={role}
+                            variant="outline"
+                            className="text-xs"
+                          >
+                            {roleLabels[role as AppRole]}
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground">
+                        {(user.roles.flatMap((r: AppRole) => ROLE_PERMISSIONS[r] || [])
+                          .filter((p: string, i: number, arr: string[]) => arr.indexOf(p) === i)
+                          .slice(0, 6)
+                        ).join(" • ")}{
+                          (user.roles.flatMap((r: AppRole) => ROLE_PERMISSIONS[r] || []).length > 6 ? " …" : "")
+                        }
+                      </div>
+                    </div>
+                  </td>
                       <td className="p-2 md:p-3">
                         <Button
                           variant="ghost"

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,11 +10,19 @@ import { Button } from "@/components/ui/button";
 import InvoiceDetailDialog from "@/components/InvoiceDetailDialog";
 
 export default function Purchases() {
+  const { isDemo } = useAuth();
   const [selectedPurchase, setSelectedPurchase] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   
   const { data: purchases = [], isLoading } = useQuery({
     queryKey: ["purchases"],
     queryFn: async () => {
+      if (isDemo) {
+        const stored = localStorage.getItem('purchases');
+        const list = stored ? JSON.parse(stored) : [];
+        return list.sort((a: any, b: any) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+      }
       const { data, error } = await supabase
         .from("purchases")
         .select("*")
@@ -43,6 +52,12 @@ export default function Purchases() {
 
   const monthTotal = purchases.reduce((sum, purchase) => sum + Number(purchase.amount), 0);
   const averagePrice = purchases.length > 0 ? monthTotal / purchases.length : 0;
+
+  const totalRows = purchases.length;
+  const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const start = (currentPage - 1) * pageSize;
+  const paginatedPurchases = purchases.slice(start, start + pageSize);
 
   return (
     <div className="space-y-6">
@@ -128,7 +143,7 @@ export default function Purchases() {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {purchases.map((purchase) => (
+                    {paginatedPurchases.map((purchase) => (
                       <tr key={purchase.id} className="hover:bg-muted/30 transition-smooth">
                         <td className="p-1.5 md:p-3 text-[10px] md:text-sm text-muted-foreground whitespace-nowrap">
                           {new Date(purchase.date).toLocaleDateString('ar-LY')}
@@ -155,6 +170,43 @@ export default function Purchases() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+              {/* Pagination */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 border-t bg-muted/30">
+                <div className="text-xs text-muted-foreground">
+                  عرض {Math.min(totalRows, start + 1)}-
+                  {Math.min(totalRows, start + paginatedPurchases.length)} من {totalRows}
+                </div>
+                <div className="flex items-center gap-2">
+                  <select
+                    className="h-8 rounded-md border bg-background px-2 text-xs"
+                    value={pageSize}
+                    onChange={(e) => { setPageSize(parseInt(e.target.value)); setPage(1); }}
+                  >
+                    {[10, 20, 50].map(s => (
+                      <option key={s} value={s}>{s} / صفحة</option>
+                    ))}
+                  </select>
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="h-8 px-2 rounded-md border text-xs disabled:opacity-50"
+                      disabled={currentPage === 1}
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
+                    >
+                      السابق
+                    </button>
+                    <span className="text-xs text-muted-foreground">
+                      {currentPage} / {totalPages}
+                    </span>
+                    <button
+                      className="h-8 px-2 rounded-md border text-xs disabled:opacity-50"
+                      disabled={currentPage === totalPages}
+                      onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    >
+                      التالي
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
