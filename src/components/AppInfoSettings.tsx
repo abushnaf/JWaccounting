@@ -66,7 +66,7 @@ export default function AppInfoSettings() {
         <CardTitle>معلومات التطبيق</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
           <div className="space-y-2">
             <Label htmlFor="app_name">اسم التطبيق</Label>
             <Input id="app_name" value={form.app_name} onChange={(e) => setForm({ ...form, app_name: e.target.value })} />
@@ -79,8 +79,8 @@ export default function AppInfoSettings() {
             <Label htmlFor="email">البريد الإلكتروني</Label>
             <Input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
           </div>
-          <div className="md:col-span-3 flex justify-end">
-            <Button type="submit" disabled={mutation.isLoading}>حفظ</Button>
+          <div className="md:col-span-3 flex justify-stretch md:justify-end">
+            <Button className="w-full md:w-auto" type="submit" disabled={mutation.isLoading}>حفظ</Button>
           </div>
         </form>
       </CardContent>

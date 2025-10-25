@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">jewelryApp</string>
-    <string name="title_activity_main">jewelryApp</string>
-    <string name="package_name">com.jewelryapp.app</string>
-    <string name="custom_url_scheme">com.jewelryapp.app</string>
+    <string name="app_name">jwaccounting</string>
+    <string name="title_activity_main">jwaccounting</string>
+    <string name="package_name">com.naftech.jwaccounting</string>
+    <string name="custom_url_scheme">com.naftech.jwaccounting</string>
 </resources>

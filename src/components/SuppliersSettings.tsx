@@ -99,11 +99,11 @@ export default function SuppliersSettings() {
           <DialogTrigger asChild>
             <Button className="gap-2"><Plus className="w-4 h-4" /> مورد جديد</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[520px] w-[95vw]">
             <DialogHeader>
               <DialogTitle>{editing ? "تعديل مورد" : "إضافة مورد"}</DialogTitle>
             </DialogHeader>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">الاسم</Label>
                 <Input id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
@@ -120,9 +120,9 @@ export default function SuppliersSettings() {
                 <Label htmlFor="address">العنوان</Label>
                 <Input id="address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
               </div>
-              <div className="md:col-span-2 flex justify-end gap-2">
-                <Button variant="outline" onClick={() => { setOpen(false); }}>{"إلغاء"}</Button>
-                <Button onClick={() => upsertMutation.mutate()} disabled={upsertMutation.isLoading}>{editing ? "حفظ التعديلات" : "حفظ"}</Button>
+              <div className="md:col-span-2 flex flex-col md:flex-row md:justify-end gap-2">
+                <Button className="w-full md:w-auto" variant="outline" onClick={() => { setOpen(false); }}>{"إلغاء"}</Button>
+                <Button className="w-full md:w-auto" onClick={() => upsertMutation.mutate()} disabled={upsertMutation.isLoading}>{editing ? "حفظ التعديلات" : "حفظ"}</Button>
               </div>
             </div>
           </DialogContent>
@@ -130,33 +130,35 @@ export default function SuppliersSettings() {
       </CardHeader>
       <CardContent>
         {isLoading ? null : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-right">الاسم</TableHead>
-                <TableHead className="text-right">الهاتف</TableHead>
-                <TableHead className="text-right">البريد</TableHead>
-                <TableHead className="text-right">العنوان</TableHead>
-                <TableHead className="text-right">الإجراءات</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {suppliers.map((s) => (
-                <TableRow key={s.id}>
-                  <TableCell>{s.name}</TableCell>
-                  <TableCell>{s.phone}</TableCell>
-                  <TableCell>{s.email}</TableCell>
-                  <TableCell>{s.address}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => startEdit(s)}><Edit2 className="w-4 h-4" /></Button>
-                      <Button variant="ghost" size="sm" onClick={() => deleteMutation.mutate(s.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto -mx-2 md:mx-0 px-2 md:px-0">
+            <Table className="min-w-[640px] w-full">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-right">الاسم</TableHead>
+                  <TableHead className="text-right">الهاتف</TableHead>
+                  <TableHead className="text-right">البريد</TableHead>
+                  <TableHead className="text-right">العنوان</TableHead>
+                  <TableHead className="text-right">الإجراءات</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {suppliers.map((s) => (
+                  <TableRow key={s.id}>
+                    <TableCell>{s.name}</TableCell>
+                    <TableCell>{s.phone}</TableCell>
+                    <TableCell>{s.email}</TableCell>
+                    <TableCell>{s.address}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => startEdit(s)}><Edit2 className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => deleteMutation.mutate(s.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </CardContent>
     </Card>

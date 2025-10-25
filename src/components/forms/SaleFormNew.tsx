@@ -186,6 +186,21 @@ export default function SaleFormNew() {
         const allSaleItems = storedSaleItems ? JSON.parse(storedSaleItems) : [];
         localStorage.setItem('sales_items', JSON.stringify([...allSaleItems, ...saleItems]));
 
+        // Decrement inventory stock for linked items
+        const invRaw = localStorage.getItem('inventory');
+        const inv = invRaw ? JSON.parse(invRaw) : [];
+        saleItems.forEach((si) => {
+          if (!si.inventory_item_id) return;
+          const idx = inv.findIndex((x: any) => x.id === si.inventory_item_id);
+          if (idx !== -1) {
+            const currentStock = parseInt(inv[idx].stock || 0);
+            const newStock = Math.max(0, currentStock - si.quantity);
+            inv[idx].stock = newStock;
+            inv[idx].status = newStock > 0 ? "متوفر" : "غير متوفر";
+          }
+        });
+        localStorage.setItem('inventory', JSON.stringify(inv));
+
         toast.success("تمت إضافة الفاتورة بنجاح");
         setOpen(false);
         setFormData({
@@ -233,6 +248,36 @@ export default function SaleFormNew() {
         .insert(saleItems);
 
       if (itemsError) throw itemsError;
+
+      // Decrement inventory stock for linked items in Supabase
+      const updatesByItem: Record<string, number> = {};
+      saleItems.forEach((si) => {
+        if (!si.inventory_item_id) return;
+        updatesByItem[si.inventory_item_id] = (updatesByItem[si.inventory_item_id] || 0) + si.quantity;
+      });
+
+      const ids = Object.keys(updatesByItem);
+      if (ids.length > 0) {
+        const { data: currentInv, error: invFetchError } = await supabase
+          .from("inventory")
+          .select("id, stock")
+          .in("id", ids);
+        if (invFetchError) throw invFetchError;
+
+        for (const row of currentInv || []) {
+          const soldQty = updatesByItem[row.id] || 0;
+          const currentStock = parseInt((row as any).stock || 0) || 0;
+          const newStock = Math.max(0, currentStock - soldQty);
+          const { error: invUpdateError } = await supabase
+            .from("inventory")
+            .update({
+              stock: newStock,
+              status: newStock > 0 ? "متوفر" : "غير متوفر",
+            })
+            .eq("id", row.id);
+          if (invUpdateError) throw invUpdateError;
+        }
+      }
 
       toast.success("تمت إضافة الفاتورة بنجاح");
       setOpen(false);

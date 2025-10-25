@@ -12,32 +12,32 @@ import DataCleanup from "@/components/DataCleanup";
 export default function Settings() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-          <SettingsIcon className="w-5 h-5 text-primary" />
+      <div className="flex items-center gap-2 md:gap-3">
+        <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+          <SettingsIcon className="w-4 h-4 md:w-5 md:h-5 text-primary" />
         </div>
         <div>
-          <h2 className="text-xl md:text-2xl font-bold">الإعدادات</h2>
-          <p className="text-sm text-muted-foreground">إدارة النظام والإعدادات العامة</p>
+          <h2 className="text-lg md:text-2xl font-bold">الإعدادات</h2>
+          <p className="text-xs md:text-sm text-muted-foreground">إدارة النظام والإعدادات العامة</p>
         </div>
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="general" className="flex items-center gap-2">
-            <Info className="w-4 h-4" />
+        <TabsList className="flex w-full gap-1 overflow-x-auto md:grid md:grid-cols-4 md:gap-0 scroll-px-3 snap-x snap-mandatory">
+          <TabsTrigger value="general" className="flex items-center gap-2 px-2 py-2 text-xs md:px-3 md:py-2 md:text-sm snap-start">
+            <Info className="w-3.5 h-3.5 md:w-4 md:h-4" />
             <span className="hidden sm:inline">عام</span>
           </TabsTrigger>
-          <TabsTrigger value="users" className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
+          <TabsTrigger value="users" className="flex items-center gap-2 px-2 py-2 text-xs md:px-3 md:py-2 md:text-sm snap-start">
+            <Users className="w-3.5 h-3.5 md:w-4 md:h-4" />
             <span className="hidden sm:inline">المستخدمين</span>
           </TabsTrigger>
-          <TabsTrigger value="roles" className="flex items-center gap-2">
-            <Shield className="w-4 h-4" />
+          <TabsTrigger value="roles" className="flex items-center gap-2 px-2 py-2 text-xs md:px-3 md:py-2 md:text-sm snap-start">
+            <Shield className="w-3.5 h-3.5 md:w-4 md:h-4" />
             <span className="hidden sm:inline">الأدوار</span>
           </TabsTrigger>
-          <TabsTrigger value="system" className="flex items-center gap-2">
-            <Building2 className="w-4 h-4" />
+          <TabsTrigger value="system" className="flex items-center gap-2 px-2 py-2 text-xs md:px-3 md:py-2 md:text-sm snap-start">
+            <Building2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
             <span className="hidden sm:inline">النظام</span>
           </TabsTrigger>
         </TabsList>

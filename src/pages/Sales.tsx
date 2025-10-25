@@ -146,7 +146,7 @@ export default function Sales() {
           ) : (
             <div className="border rounded-lg overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[500px]">
+                <table className="w-full min-w-full md:min-w-[500px]">
                   <thead className="bg-muted/50">
                     <tr>
                       <th className="text-right p-1.5 md:p-3 text-[10px] md:text-sm font-medium">التاريخ</th>

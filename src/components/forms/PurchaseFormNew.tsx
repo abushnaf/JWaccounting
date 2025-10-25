@@ -123,6 +123,11 @@ export default function PurchaseFormNew() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!isDemo && !formData.supplier_id) {
+      toast.error("الرجاء اختيار المورد");
+      return;
+    }
+
     const validItems = items.filter(
       (item) => item.weight && item.price_per_gram && item.item_name
     );
@@ -137,7 +142,78 @@ export default function PurchaseFormNew() {
     try {
       const totalAmount = calculateTotal();
 
-      // Insert purchase
+      if (isDemo) {
+        // Demo mode: persist to localStorage
+        const purchasesRaw = localStorage.getItem('purchases');
+        const purchaseItemsRaw = localStorage.getItem('purchase_items');
+        const inventoryRaw = localStorage.getItem('inventory');
+
+        const purchases = purchasesRaw ? JSON.parse(purchasesRaw) : [];
+        const allPurchaseItems = purchaseItemsRaw ? JSON.parse(purchaseItemsRaw) : [];
+        const inv = inventoryRaw ? JSON.parse(inventoryRaw) : [];
+
+        const purchaseId = `${Date.now()}`;
+        const demoPurchase = {
+          id: purchaseId,
+          date: formData.date,
+          amount: totalAmount,
+          description: formData.description || "طلب شراء",
+          payment_method: formData.payment_method,
+          supplier_id: formData.supplier_id || null,
+        };
+
+        const demoItems = validItems.map((item) => {
+          const qty = parseInt(item.quantity);
+          const w = parseFloat(item.weight);
+          const p = parseFloat(item.price_per_gram);
+          // Update inventory stock/status for linked items
+          if (item.inventory_item_id) {
+            const idx = inv.findIndex((x: any) => x.id === item.inventory_item_id);
+            if (idx !== -1) {
+              const currentStock = parseInt(inv[idx].stock || 0);
+              const newStock = currentStock + qty;
+              inv[idx].stock = newStock;
+              inv[idx].weight = w;
+              inv[idx].price_per_gram = p;
+              inv[idx].condition = item.condition;
+              inv[idx].status = newStock > 0 ? "متوفر" : "غير متوفر";
+            }
+          }
+          return {
+            id: `${purchaseId}-${Math.random().toString(36).slice(2,8)}`,
+            purchase_id: purchaseId,
+            inventory_item_id: item.inventory_item_id || null,
+            item_name: item.item_name,
+            category: item.category,
+            condition: item.condition,
+            weight: w,
+            price_per_gram: p,
+            quantity: qty,
+            amount: w * p * qty,
+          };
+        });
+
+        localStorage.setItem('purchases', JSON.stringify([demoPurchase, ...purchases]));
+        localStorage.setItem('purchase_items', JSON.stringify([...demoItems, ...allPurchaseItems]));
+        localStorage.setItem('inventory', JSON.stringify(inv));
+
+        toast.success("تمت إضافة الطلب بنجاح");
+        setOpen(false);
+        setFormData({
+          date: new Date().toISOString().split("T")[0],
+          payment_method: "نقدي",
+          description: "",
+          supplier_id: "",
+        });
+        setItems([
+          { inventory_item_id: "", item_name: "", category: "", condition: "جديد", weight: "", price_per_gram: "", quantity: "1" },
+        ]);
+        queryClient.invalidateQueries({ queryKey: ["purchases"] });
+        queryClient.invalidateQueries({ queryKey: ["inventory"] });
+        return;
+      }
+
+      // Supabase path
       const { data: purchase, error: purchaseError } = await supabase
         .from("purchases")
         .insert({
@@ -145,13 +221,13 @@ export default function PurchaseFormNew() {
           amount: totalAmount,
           description: formData.description || "طلب شراء",
           payment_method: formData.payment_method,
+          supplier_id: formData.supplier_id || null,
         })
         .select()
         .single();
 
       if (purchaseError) throw purchaseError;
 
-      // Insert purchase items
       const purchaseItems = validItems.map((item) => ({
         purchase_id: purchase.id,
         inventory_item_id: item.inventory_item_id || null,
@@ -170,6 +246,44 @@ export default function PurchaseFormNew() {
 
       if (itemsError) throw itemsError;
 
+      // Update related inventory items (stock, price_per_gram, weight, condition, status)
+      const updatesByItem: Record<string, { qty: number; weight: number; price: number; condition: string }> = {};
+      validItems.forEach((it) => {
+        if (!it.inventory_item_id) return;
+        updatesByItem[it.inventory_item_id] = {
+          qty: (updatesByItem[it.inventory_item_id]?.qty || 0) + parseInt(it.quantity),
+          weight: parseFloat(it.weight),
+          price: parseFloat(it.price_per_gram),
+          condition: it.condition,
+        };
+      });
+
+      const ids = Object.keys(updatesByItem);
+      if (ids.length > 0) {
+        const { data: currentInv, error: invFetchError } = await supabase
+          .from("inventory")
+          .select("id, stock")
+          .in("id", ids);
+        if (invFetchError) throw invFetchError;
+
+        // Apply updates sequentially to keep it simple
+        for (const row of currentInv || []) {
+          const u = updatesByItem[row.id];
+          const newStock = (parseInt((row as any).stock || 0) || 0) + (u?.qty || 0);
+          const { error: invUpdateError } = await supabase
+            .from("inventory")
+            .update({
+              stock: newStock,
+              weight: u.weight,
+              price_per_gram: u.price,
+              condition: u.condition,
+              status: newStock > 0 ? "متوفر" : "غير متوفر",
+            })
+            .eq("id", row.id);
+          if (invUpdateError) throw invUpdateError;
+        }
+      }
+
       toast.success("تمت إضافة الطلب بنجاح");
       setOpen(false);
       setFormData({
@@ -183,9 +297,10 @@ export default function PurchaseFormNew() {
       ]);
       queryClient.invalidateQueries({ queryKey: ["purchases"] });
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding purchase:", error);
-      toast.error("حدث خطأ أثناء إضافة الطلب");
+      const msg = typeof error?.message === 'string' ? error.message : (typeof error === 'string' ? error : '');
+      toast.error(`حدث خطأ أثناء إضافة الطلب${msg ? `: ${msg}` : ''}`);
     } finally {
       setLoading(false);
     }

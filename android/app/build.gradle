@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.jewelryapp.app"
+    namespace "com.naftech.jwaccounting"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.jewelryapp.app"
+        applicationId "com.naftech.jwaccounting"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

@@ -1,4 +1,4 @@
-package com.jewelryapp.app;
+package com.naftech.jwaccounting;
 
 import com.getcapacitor.BridgeActivity;
 

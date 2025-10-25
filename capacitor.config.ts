@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.jewelryapp.app',
-  appName: 'jewelryApp',
+  appId: 'com.naftech.jwaccounting',
+  appName: 'jwaccounting',
   webDir: 'dist'
 };
 

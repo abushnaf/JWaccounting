@@ -36,9 +36,9 @@ export default function InventoryForm() {
     name: "",
     category: "ذهب",
     karat: "21K",
-    weight: "",
-    price_per_gram: "",
-    stock: "1",
+    weight: "0",
+    price_per_gram: "0",
+    stock: "0",
     condition: "جديد",
   });
 
@@ -54,10 +54,10 @@ export default function InventoryForm() {
         const newItem = {
           id: Date.now().toString(),
           ...formData,
-          weight: parseFloat(formData.weight),
-          price_per_gram: parseFloat(formData.price_per_gram),
-          stock: parseInt(formData.stock),
-          status: parseInt(formData.stock) > 5 ? "متوفر" : "منخفض",
+          weight: 0,
+          price_per_gram: 0,
+          stock: 0,
+          status: "غير متوفر",
           created_at: new Date().toISOString()
         };
         localStorage.setItem('inventory', JSON.stringify([...inventory, newItem]));
@@ -66,11 +66,11 @@ export default function InventoryForm() {
           name: formData.name,
           category: formData.category,
           karat: formData.karat,
-          weight: parseFloat(formData.weight),
-          price_per_gram: parseFloat(formData.price_per_gram),
-          stock: parseInt(formData.stock),
+          weight: 0,
+          price_per_gram: 0,
+          stock: 0,
           condition: formData.condition,
-          status: parseInt(formData.stock) > 5 ? "متوفر" : "منخفض",
+          status: "غير متوفر",
         });
 
         if (error) throw error;
@@ -82,9 +82,9 @@ export default function InventoryForm() {
         name: "",
         category: "ذهب",
         karat: "21K",
-        weight: "",
-        price_per_gram: "",
-        stock: "1",
+        weight: "0",
+        price_per_gram: "0",
+        stock: "0",
         condition: "جديد",
       });
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
@@ -176,78 +176,6 @@ export default function InventoryForm() {
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="weight">الوزن (جرام)</Label>
-            <Input
-              id="weight"
-              type="number"
-              step="0.01"
-              required
-              value={formData.weight}
-              onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="price_per_gram">سعر الجرام (د.ل)</Label>
-            <Input
-              id="price_per_gram"
-              type="number"
-              step="0.01"
-              required
-              value={formData.price_per_gram}
-              onChange={(e) =>
-                setFormData({ ...formData, price_per_gram: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="stock">الكمية</Label>
-            <Input
-              id="stock"
-              type="number"
-              required
-              value={formData.stock}
-              onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="condition">الحالة</Label>
-            <Select
-              value={formData.condition}
-              onValueChange={(value) => setFormData({ ...formData, condition: value })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {conditionTypes.map((condition) => (
-                  <SelectItem key={condition} value={condition}>
-                    {condition}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Total Display */}
-          {formData.weight && formData.price_per_gram && formData.stock && (
-            <div className="p-4 bg-muted/50 rounded-lg border border-border">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">الإجمالي:</span>
-                <span className="text-xl font-bold text-secondary">
-                  {(
-                    parseFloat(formData.weight) *
-                    parseFloat(formData.price_per_gram) *
-                    parseInt(formData.stock)
-                  ).toLocaleString(undefined, { maximumFractionDigits: 2 })}{" "}
-                  د.ل
-                </span>
-              </div>
-            </div>
-          )}
 
           <div className="flex justify-end gap-2 pt-4">
             <Button
